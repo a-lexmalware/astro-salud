@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { analiticaDe, ANTES, DESPUES, ESTUDIOS_OSDR, fueraDeRango } from "@/lib/analiticas";
 import type { Evaluacion } from "@/lib/salud";
 import type { Astronauta, Nivel } from "@/lib/tipos";
 import Corazon from "./Corazon";
@@ -49,12 +50,13 @@ export default function FichaAstronauta({ astronauta: a, abierta, evaluacion, fc
     >
       {a && (
         <div className="grid md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-          <div className="relative">
+          {/* El retrato se queda fijo arriba mientras se desplazan los datos. */}
+          <div className="relative md:sticky md:top-0 md:self-start">
             <FotoAstronauta
               astronauta={a}
               alt={`Retrato de ${a.nombre}`}
               sizes="(max-width: 768px) 100vw, 400px"
-              aspecto="aspect-[5/4] md:aspect-auto md:h-full"
+              aspecto="aspect-[5/4] md:aspect-[4/5]"
             />
             <span className="absolute inset-x-0 bottom-0 h-1.5" style={{ background: color }} aria-hidden />
           </div>
@@ -117,6 +119,8 @@ export default function FichaAstronauta({ astronauta: a, abierta, evaluacion, fc
               </h3>
               <p className="mt-1 max-w-prose leading-relaxed">{a.notaMedica}</p>
             </section>
+
+            <AnalisisSangre tripulante={a.analiticaOsdr} />
           </div>
         </div>
       )}
@@ -130,5 +134,78 @@ function Dato({ termino, valor, ancho = false }: { termino: string; valor: strin
       <dt className="text-tenue">{termino}</dt>
       <dd className="mt-0.5 text-base">{valor}</dd>
     </div>
+  );
+}
+
+/** Análisis de sangre reales de Inspiration4 (NASA OSDR): antes del vuelo y al volver. */
+function AnalisisSangre({ tripulante }: { tripulante: string }) {
+  const marcadores = analiticaDe(tripulante);
+  if (!marcadores) return null;
+  const fuera = marcadores.filter(
+    (m) => fueraDeRango(m.valores[ANTES], m.min, m.max) || fueraDeRango(m.valores[DESPUES], m.min, m.max),
+  ).length;
+
+  return (
+    <section aria-labelledby="ficha-sangre" className="border-t border-borde pt-5">
+      <h3 id="ficha-sangre" className="ancho-expandido text-lg font-semibold">
+        Análisis de sangre
+      </h3>
+      <p className="mt-1 max-w-prose text-sm text-tenue">
+        Datos reales del tripulante {tripulante} de Inspiration4, la misión civil de SpaceX de 2021 (3 días en
+        órbita), publicados por la NASA. Comparan la muestra de 3 días antes del lanzamiento con la del día siguiente
+        al aterrizaje. {fuera === 0 ? "Todo dentro de rango." : `${fuera} ${fuera === 1 ? "marcador sale" : "marcadores salen"} del rango del laboratorio.`}
+      </p>
+
+      <table className="mt-4 w-full text-sm">
+        <thead>
+          <tr className="text-left text-tenue">
+            <th scope="col" className="pb-2 font-normal">Marcador</th>
+            <th scope="col" className="pb-2 text-right font-normal">Antes</th>
+            <th scope="col" className="pb-2 text-right font-normal">Al volver</th>
+            <th scope="col" className="hidden pb-2 text-right font-normal sm:table-cell">Rango</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-borde">
+          {marcadores.map((m) => (
+            <tr key={m.id}>
+              <th scope="row" className="py-2 text-left font-normal">
+                {m.nombre} <span className="text-tenue">{m.unidad}</span>
+              </th>
+              <Valor valor={m.valores[ANTES]} min={m.min} max={m.max} />
+              <Valor valor={m.valores[DESPUES]} min={m.min} max={m.max} />
+              <td className="ancho-condensado hidden py-2 text-right tabular-nums text-tenue sm:table-cell">
+                {m.min ?? "?"}–{m.max ?? "?"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <p className="mt-3 text-xs text-tenue">
+        Fuente: NASA Open Science Data Repository,{" "}
+        {ESTUDIOS_OSDR.map((e, i) => (
+          <span key={e.id}>
+            {i > 0 && " y "}
+            <a href={e.url} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-texto">
+              {e.id} ({e.titulo.toLowerCase()})
+            </a>
+          </span>
+        ))}
+        .
+      </p>
+    </section>
+  );
+}
+
+function Valor({ valor, min, max }: { valor: number | null; min: number | null; max: number | null }) {
+  const fuera = fueraDeRango(valor, min, max);
+  return (
+    <td
+      className="ancho-condensado py-2 text-right text-base font-semibold tabular-nums"
+      style={fuera ? { color: "var(--color-amarillo)" } : undefined}
+    >
+      {valor ?? "--"}
+      {fuera && <span className="ml-1 text-xs font-normal [font-variation-settings:'wdth'_100]">{fuera}</span>}
+    </td>
   );
 }

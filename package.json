@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test lib/*.test.ts",
-    "simulador": "tsx scripts/simulador.ts"
+    "simulador": "tsx scripts/simulador.ts",
+    "datos:osdr": "tsx scripts/osdr-analiticas.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",

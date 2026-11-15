@@ -44,6 +44,21 @@ panel se guardan en la tabla `escenarios` y el simulador los obedece. Si detiene
 | `scripts/simulador.ts` | Envía lecturas a Supabase. |
 | `supabase/esquema.sql` | Tablas, políticas y Realtime. |
 
+## Datos reales de la NASA
+
+La ficha de cada astronauta muestra un análisis de sangre real de un tripulante de Inspiration4
+(SpaceX, 2021), descargado del [NASA Open Science Data Repository](https://osdr.nasa.gov):
+[OSD-569](https://osdr.nasa.gov/bio/repo/data/studies/OSD-569) (hemograma) y
+[OSD-575](https://osdr.nasa.gov/bio/repo/data/studies/OSD-575) (panel metabólico). Los datos están en
+`lib/analiticas-osdr.json` y se regeneran con:
+
+```bash
+npm run datos:osdr
+```
+
+Las lecturas del reloj (pulso, oxígeno, temperatura, sueño) siguen siendo simuladas: OSDR no publica en
+abierto los datos de los relojes de esa misión.
+
 ## Fotos de la tripulación
 
 Los retratos de `public/astronautas/` están generados con IA (personas ficticias). Sin foto, un astronauta muestra sus iniciales. Para poner una, guarda la imagen en

@@ -1,0 +1,610 @@
+{
+  "fuente": "NASA OSDR: OSD-569 (CBC) y OSD-575 (CMP), misión Inspiration4",
+  "momentos": [
+    "L-92",
+    "L-44",
+    "L-3",
+    "R+1",
+    "R+45",
+    "R+82",
+    "R+194"
+  ],
+  "datos": [
+    {
+      "tripulante": "C001",
+      "marcadores": [
+        {
+          "id": "hemoglobina",
+          "nombre": "Hemoglobina",
+          "unidad": "g/dL",
+          "min": 13.2,
+          "max": 17.1,
+          "valores": {
+            "L-92": 14.1,
+            "L-44": 14.9,
+            "L-3": 14.7,
+            "R+1": 14.7,
+            "R+45": 14.3,
+            "R+82": 15.7,
+            "R+194": 14.1
+          }
+        },
+        {
+          "id": "hematocrito",
+          "nombre": "Hematocrito",
+          "unidad": "%",
+          "min": 38.5,
+          "max": 50,
+          "valores": {
+            "L-92": 42.5,
+            "L-44": 45.1,
+            "L-3": 44.5,
+            "R+1": 43.6,
+            "R+45": 43.3,
+            "R+82": 46.1,
+            "R+194": 41.8
+          }
+        },
+        {
+          "id": "leucocitos",
+          "nombre": "Leucocitos",
+          "unidad": "mil/µL",
+          "min": 3.8,
+          "max": 10.8,
+          "valores": {
+            "L-92": 5.4,
+            "L-44": 5.5,
+            "L-3": 7,
+            "R+1": 5,
+            "R+45": 4.9,
+            "R+82": 4.9,
+            "R+194": 4.9
+          }
+        },
+        {
+          "id": "plaquetas",
+          "nombre": "Plaquetas",
+          "unidad": "mil/µL",
+          "min": 140,
+          "max": 400,
+          "valores": {
+            "L-92": 241,
+            "L-44": 237,
+            "L-3": 258,
+            "R+1": 227,
+            "R+45": 228,
+            "R+82": 257,
+            "R+194": 214
+          }
+        },
+        {
+          "id": "glucosa",
+          "nombre": "Glucosa",
+          "unidad": "mg/dL",
+          "min": 65,
+          "max": 99,
+          "valores": {
+            "L-92": 83,
+            "L-44": 80,
+            "L-3": 69,
+            "R+1": 90,
+            "R+45": 84,
+            "R+82": 91,
+            "R+194": 87
+          }
+        },
+        {
+          "id": "creatinina",
+          "nombre": "Creatinina",
+          "unidad": "mg/dL",
+          "min": 0.6,
+          "max": 1.35,
+          "valores": {
+            "L-92": 1.24,
+            "L-44": 1.1,
+            "L-3": 1.37,
+            "R+1": 1.12,
+            "R+45": 1.11,
+            "R+82": 1.25,
+            "R+194": 1.29
+          }
+        },
+        {
+          "id": "sodio",
+          "nombre": "Sodio",
+          "unidad": "mmol/L",
+          "min": 135,
+          "max": 146,
+          "valores": {
+            "L-92": 141,
+            "L-44": 139,
+            "L-3": 142,
+            "R+1": 138,
+            "R+45": 138,
+            "R+82": 140,
+            "R+194": 137
+          }
+        },
+        {
+          "id": "potasio",
+          "nombre": "Potasio",
+          "unidad": "mmol/L",
+          "min": 3.5,
+          "max": 5.3,
+          "valores": {
+            "L-92": 4.6,
+            "L-44": 4.2,
+            "L-3": 3.9,
+            "R+1": 4.4,
+            "R+45": 4,
+            "R+82": 4.3,
+            "R+194": 4.3
+          }
+        },
+        {
+          "id": "calcio",
+          "nombre": "Calcio",
+          "unidad": "mg/dL",
+          "min": 8.6,
+          "max": 10.3,
+          "valores": {
+            "L-92": 9.7,
+            "L-44": 10,
+            "L-3": 9.6,
+            "R+1": 9.7,
+            "R+45": 9.6,
+            "R+82": 10.1,
+            "R+194": 9.4
+          }
+        }
+      ]
+    },
+    {
+      "tripulante": "C002",
+      "marcadores": [
+        {
+          "id": "hemoglobina",
+          "nombre": "Hemoglobina",
+          "unidad": "g/dL",
+          "min": 11.7,
+          "max": 15.5,
+          "valores": {
+            "L-92": 13.2,
+            "L-44": 12.8,
+            "L-3": 11.5,
+            "R+1": 12.1,
+            "R+45": 12.2,
+            "R+82": 11.5,
+            "R+194": 12.7
+          }
+        },
+        {
+          "id": "hematocrito",
+          "nombre": "Hematocrito",
+          "unidad": "%",
+          "min": 35,
+          "max": 45,
+          "valores": {
+            "L-92": 40.8,
+            "L-44": 37.8,
+            "L-3": 35.9,
+            "R+1": 36.4,
+            "R+45": 37.1,
+            "R+82": 34.7,
+            "R+194": 38.3
+          }
+        },
+        {
+          "id": "leucocitos",
+          "nombre": "Leucocitos",
+          "unidad": "mil/µL",
+          "min": 3.8,
+          "max": 10.8,
+          "valores": {
+            "L-92": 6.5,
+            "L-44": 5.4,
+            "L-3": 7.2,
+            "R+1": 5.5,
+            "R+45": 6.4,
+            "R+82": 5.3,
+            "R+194": 6.4
+          }
+        },
+        {
+          "id": "plaquetas",
+          "nombre": "Plaquetas",
+          "unidad": "mil/µL",
+          "min": 140,
+          "max": 400,
+          "valores": {
+            "L-92": 241,
+            "L-44": 229,
+            "L-3": 241,
+            "R+1": 252,
+            "R+45": 252,
+            "R+82": 245,
+            "R+194": 243
+          }
+        },
+        {
+          "id": "glucosa",
+          "nombre": "Glucosa",
+          "unidad": "mg/dL",
+          "min": 65,
+          "max": 99,
+          "valores": {
+            "L-92": 69,
+            "L-44": 72,
+            "L-3": 78,
+            "R+1": 83,
+            "R+45": 44,
+            "R+82": 77,
+            "R+194": 84
+          }
+        },
+        {
+          "id": "creatinina",
+          "nombre": "Creatinina",
+          "unidad": "mg/dL",
+          "min": 0.5,
+          "max": 1.05,
+          "valores": {
+            "L-92": 0.83,
+            "L-44": 0.88,
+            "L-3": 0.96,
+            "R+1": 0.95,
+            "R+45": 1.02,
+            "R+82": 0.82,
+            "R+194": 1.02
+          }
+        },
+        {
+          "id": "sodio",
+          "nombre": "Sodio",
+          "unidad": "mmol/L",
+          "min": 135,
+          "max": 146,
+          "valores": {
+            "L-92": 142,
+            "L-44": 141,
+            "L-3": 143,
+            "R+1": 137,
+            "R+45": 140,
+            "R+82": 141,
+            "R+194": 138
+          }
+        },
+        {
+          "id": "potasio",
+          "nombre": "Potasio",
+          "unidad": "mmol/L",
+          "min": 3.5,
+          "max": 5.3,
+          "valores": {
+            "L-92": 3.9,
+            "L-44": 4,
+            "L-3": 3.8,
+            "R+1": 3.5,
+            "R+45": 4.1,
+            "R+82": 3.7,
+            "R+194": 4.4
+          }
+        },
+        {
+          "id": "calcio",
+          "nombre": "Calcio",
+          "unidad": "mg/dL",
+          "min": 8.6,
+          "max": 10.4,
+          "valores": {
+            "L-92": 10.2,
+            "L-44": 9.7,
+            "L-3": 9.3,
+            "R+1": 9.2,
+            "R+45": 9.3,
+            "R+82": 9.7,
+            "R+194": 9.5
+          }
+        }
+      ]
+    },
+    {
+      "tripulante": "C003",
+      "marcadores": [
+        {
+          "id": "hemoglobina",
+          "nombre": "Hemoglobina",
+          "unidad": "g/dL",
+          "min": 13.2,
+          "max": 17.1,
+          "valores": {
+            "L-92": 13.2,
+            "L-44": 14.4,
+            "L-3": 13.3,
+            "R+1": 13.5,
+            "R+45": 14.6,
+            "R+82": 14.4,
+            "R+194": 13.3
+          }
+        },
+        {
+          "id": "hematocrito",
+          "nombre": "Hematocrito",
+          "unidad": "%",
+          "min": 38.5,
+          "max": 50,
+          "valores": {
+            "L-92": 40.7,
+            "L-44": 42.6,
+            "L-3": 41.6,
+            "R+1": 41.4,
+            "R+45": 44.3,
+            "R+82": 44.6,
+            "R+194": 40.4
+          }
+        },
+        {
+          "id": "leucocitos",
+          "nombre": "Leucocitos",
+          "unidad": "mil/µL",
+          "min": 3.8,
+          "max": 10.8,
+          "valores": {
+            "L-92": 9.6,
+            "L-44": 9.3,
+            "L-3": 9.8,
+            "R+1": 7,
+            "R+45": 7.8,
+            "R+82": 8.8,
+            "R+194": 7.4
+          }
+        },
+        {
+          "id": "plaquetas",
+          "nombre": "Plaquetas",
+          "unidad": "mil/µL",
+          "min": 140,
+          "max": 400,
+          "valores": {
+            "L-92": 12.9,
+            "L-44": 345,
+            "L-3": 367,
+            "R+1": 359,
+            "R+45": 396,
+            "R+82": 345,
+            "R+194": 185
+          }
+        },
+        {
+          "id": "glucosa",
+          "nombre": "Glucosa",
+          "unidad": "mg/dL",
+          "min": 65,
+          "max": 99,
+          "valores": {
+            "L-92": 77,
+            "L-44": 62,
+            "L-3": 75,
+            "R+1": 103,
+            "R+45": 36,
+            "R+82": 80,
+            "R+194": 73
+          }
+        },
+        {
+          "id": "creatinina",
+          "nombre": "Creatinina",
+          "unidad": "mg/dL",
+          "min": 0.6,
+          "max": 1.35,
+          "valores": {
+            "L-92": 1,
+            "L-44": 1.03,
+            "L-3": 1.08,
+            "R+1": 0.89,
+            "R+45": 0.94,
+            "R+82": 0.89,
+            "R+194": 1.1
+          }
+        },
+        {
+          "id": "sodio",
+          "nombre": "Sodio",
+          "unidad": "mmol/L",
+          "min": 135,
+          "max": 146,
+          "valores": {
+            "L-92": 139,
+            "L-44": 139,
+            "L-3": 138,
+            "R+1": 137,
+            "R+45": 136,
+            "R+82": 138,
+            "R+194": 137
+          }
+        },
+        {
+          "id": "potasio",
+          "nombre": "Potasio",
+          "unidad": "mmol/L",
+          "min": 3.5,
+          "max": 5.3,
+          "valores": {
+            "L-92": 3.7,
+            "L-44": 3.5,
+            "L-3": 3.3,
+            "R+1": 3,
+            "R+45": 4.4,
+            "R+82": 3.7,
+            "R+194": 3.8
+          }
+        },
+        {
+          "id": "calcio",
+          "nombre": "Calcio",
+          "unidad": "mg/dL",
+          "min": 8.6,
+          "max": 10.3,
+          "valores": {
+            "L-92": 9.3,
+            "L-44": 10.3,
+            "L-3": 9.5,
+            "R+1": 9.4,
+            "R+45": 9.6,
+            "R+82": 10,
+            "R+194": 9.6
+          }
+        }
+      ]
+    },
+    {
+      "tripulante": "C004",
+      "marcadores": [
+        {
+          "id": "hemoglobina",
+          "nombre": "Hemoglobina",
+          "unidad": "g/dL",
+          "min": 13.2,
+          "max": 17.1,
+          "valores": {
+            "L-92": 17,
+            "L-44": 16.6,
+            "L-3": 16.8,
+            "R+1": 16.5,
+            "R+45": 16.8,
+            "R+82": 16.4,
+            "R+194": 16.5
+          }
+        },
+        {
+          "id": "hematocrito",
+          "nombre": "Hematocrito",
+          "unidad": "%",
+          "min": 38.5,
+          "max": 50,
+          "valores": {
+            "L-92": 49.1,
+            "L-44": 50,
+            "L-3": 49,
+            "R+1": 48.3,
+            "R+45": 49,
+            "R+82": 47.5,
+            "R+194": 48
+          }
+        },
+        {
+          "id": "leucocitos",
+          "nombre": "Leucocitos",
+          "unidad": "mil/µL",
+          "min": 3.8,
+          "max": 10.8,
+          "valores": {
+            "L-92": 7.7,
+            "L-44": 6.4,
+            "L-3": 10.6,
+            "R+1": 8.1,
+            "R+45": 6.8,
+            "R+82": 7.9,
+            "R+194": 8.3
+          }
+        },
+        {
+          "id": "plaquetas",
+          "nombre": "Plaquetas",
+          "unidad": "mil/µL",
+          "min": 140,
+          "max": 400,
+          "valores": {
+            "L-92": 239,
+            "L-44": 227,
+            "L-3": 295,
+            "R+1": 240,
+            "R+45": 281,
+            "R+82": 198,
+            "R+194": 256
+          }
+        },
+        {
+          "id": "glucosa",
+          "nombre": "Glucosa",
+          "unidad": "mg/dL",
+          "min": 65,
+          "max": 99,
+          "valores": {
+            "L-92": 100,
+            "L-44": 83,
+            "L-3": 56,
+            "R+1": 97,
+            "R+45": 43,
+            "R+82": 80,
+            "R+194": 84
+          }
+        },
+        {
+          "id": "creatinina",
+          "nombre": "Creatinina",
+          "unidad": "mg/dL",
+          "min": 0.6,
+          "max": 1.35,
+          "valores": {
+            "L-92": 1.14,
+            "L-44": 1.08,
+            "L-3": 1.13,
+            "R+1": 1.15,
+            "R+45": 1.08,
+            "R+82": 1.11,
+            "R+194": 1.31
+          }
+        },
+        {
+          "id": "sodio",
+          "nombre": "Sodio",
+          "unidad": "mmol/L",
+          "min": 135,
+          "max": 146,
+          "valores": {
+            "L-92": 138,
+            "L-44": 140,
+            "L-3": 141,
+            "R+1": 140,
+            "R+45": 139,
+            "R+82": 140,
+            "R+194": 141
+          }
+        },
+        {
+          "id": "potasio",
+          "nombre": "Potasio",
+          "unidad": "mmol/L",
+          "min": 3.5,
+          "max": 5.3,
+          "valores": {
+            "L-92": 4.2,
+            "L-44": 4.2,
+            "L-3": 3.7,
+            "R+1": 4,
+            "R+45": 5.9,
+            "R+82": 4.2,
+            "R+194": 3.8
+          }
+        },
+        {
+          "id": "calcio",
+          "nombre": "Calcio",
+          "unidad": "mg/dL",
+          "min": 8.6,
+          "max": 10.3,
+          "valores": {
+            "L-92": 10,
+            "L-44": 10.1,
+            "L-3": 10.2,
+            "R+1": 9.8,
+            "R+45": 9.8,
+            "R+82": 10,
+            "R+194": 9.8
+          }
+        }
+      ]
+    }
+  ]
+}

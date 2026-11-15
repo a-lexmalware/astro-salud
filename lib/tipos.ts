@@ -20,6 +20,8 @@ export interface Astronauta {
   fcReposo: number; // lpm medidos antes del lanzamiento
   alergias: string;
   notaMedica: string;
+  /** Tripulante de Inspiration4 (C001–C004) cuya analítica real se muestra en la ficha. */
+  analiticaOsdr: string;
 }
 
 /** Una lectura del smartwatch. Coincide con las columnas de la tabla `lecturas`. */
@@ -38,6 +40,7 @@ export interface Lectura {
 export const ASTRONAUTAS: Astronauta[] = [
   {
     id: "ast-1",
+    analiticaOsdr: "C002",
     foto: "/astronautas/ast-1.jpg",
     nombre: "Valeria Ríos",
     rol: "Comandante",
@@ -56,6 +59,7 @@ export const ASTRONAUTAS: Astronauta[] = [
   },
   {
     id: "ast-2",
+    analiticaOsdr: "C001",
     foto: "/astronautas/ast-2.jpg",
     nombre: "Mateo Salas",
     rol: "Ingeniero de vuelo",
@@ -74,6 +78,7 @@ export const ASTRONAUTAS: Astronauta[] = [
   },
   {
     id: "ast-3",
+    analiticaOsdr: "C003",
     foto: "/astronautas/ast-3.jpg",
     nombre: "Akira Tanaka",
     rol: "Médica de a bordo",
@@ -92,6 +97,7 @@ export const ASTRONAUTAS: Astronauta[] = [
   },
   {
     id: "ast-4",
+    analiticaOsdr: "C004",
     foto: "/astronautas/ast-4.jpg",
     nombre: "Lucas Ferreira",
     rol: "Especialista de misión",
