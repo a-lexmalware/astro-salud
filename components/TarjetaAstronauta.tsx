@@ -1,5 +1,6 @@
 import { evaluar, METRICAS, META_EJERCICIO } from "@/lib/salud";
 import { ESCENARIOS, type Astronauta, type Escenario, type Lectura, type Nivel } from "@/lib/tipos";
+import Corazon from "./Corazon";
 import FotoAstronauta from "./FotoAstronauta";
 import Sparkline from "./Sparkline";
 
@@ -22,7 +23,6 @@ interface Props {
   sinSenal: boolean;
   segundosDesde: number | null;
   onEscenario: (e: Escenario) => void;
-  pulsoTelefono: boolean; // llega pulso real desde el teléfono (Gadgetbridge)
   onAbrirFicha: () => void;
 }
 
@@ -33,7 +33,6 @@ export default function TarjetaAstronauta({
   sinSenal,
   segundosDesde,
   onEscenario,
-  pulsoTelefono,
   onAbrirFicha,
 }: Props) {
   const ultima = historial.at(-1);
@@ -88,7 +87,12 @@ export default function TarjetaAstronauta({
           const colorMetrica = sinSenal ? "var(--color-tenue)" : COLOR[n];
           return (
             <div key={id} className="rounded-lg bg-panel-2 p-3">
-              <p className="text-xs text-tenue">{m.etiqueta}</p>
+              <p className="flex items-center gap-1.5 text-xs text-tenue">
+                {id === "fc" && (
+                  <Corazon fc={ultima && !sinSenal ? ultima.fc : null} color={colorMetrica} className="size-3.5" />
+                )}
+                {m.etiqueta}
+              </p>
               <p className="font-mono text-2xl font-semibold tabular-nums" style={{ color: colorMetrica }}>
                 {ultima ? ultima[id] : "--"}
                 <span className="ml-1 text-xs font-normal text-tenue">{m.unidad}</span>
@@ -134,13 +138,6 @@ export default function TarjetaAstronauta({
           <li className="text-tenue">Sin alertas activas.</li>
         )}
       </ul>
-
-      {pulsoTelefono && (
-        <p className="text-xs text-tenue">
-          <span className="text-acento">Reloj vía teléfono</span>: frecuencia cardiaca real enviada por Gadgetbridge.
-          Las demás métricas son simuladas.
-        </p>
-      )}
 
       <footer className="mt-auto flex items-center justify-between gap-3 border-t border-borde pt-3">
         <label htmlFor={idSelect} className="text-xs text-tenue">

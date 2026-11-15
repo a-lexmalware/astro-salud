@@ -39,7 +39,6 @@ panel se guardan en la tabla `escenarios` y el simulador los obedece. Si detiene
 | `components/FichaAstronauta.tsx` | Ficha lateral que se abre al tocar la cabecera de una tarjeta. |
 | `components/Panel.tsx` | Panel, conexión Realtime y modo demo. |
 | `components/TarjetaAstronauta.tsx` | Tarjeta por astronauta. |
-| `lib/pulso.ts` | Pulso real llegado desde el teléfono (Gadgetbridge). |
 | `scripts/simulador.ts` | Envía lecturas a Supabase. |
 | `supabase/esquema.sql` | Tablas, políticas y Realtime. |
 
@@ -49,18 +48,13 @@ Los retratos de `public/astronautas/` están generados con IA (personas ficticia
 `public/astronautas/` (por ejemplo `ast-1.jpg`, mejor vertical 4:5) y añade
 `foto: "/astronautas/ast-1.jpg"` a ese astronauta en `lib/tipos.ts`.
 
-## Pulso real desde un reloj
-
-Para usar el pulso real de un reloj Xiaomi (como el Redmi Watch 5 Active) hay un camino con un
-teléfono Android y Gadgetbridge parcheado: ver [integraciones/gadgetbridge](integraciones/gadgetbridge/README.md).
-
 Para otras fuentes (una app de Wear OS, por ejemplo) basta con insertar filas en `lecturas` con las
 mismas columnas.
 
 ## Comprobaciones
 
 ```bash
-npm test             # pruebas de reglas de salud, simulador y pulso real
+npm test             # pruebas de reglas de salud y del simulador
 npm run lint
 npm run typecheck
 ```

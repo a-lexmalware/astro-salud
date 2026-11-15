@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { Evaluacion } from "@/lib/salud";
 import type { Astronauta, Nivel } from "@/lib/tipos";
+import Corazon from "./Corazon";
 import FotoAstronauta from "./FotoAstronauta";
 import { COLOR, ETIQUETA } from "./TarjetaAstronauta";
 
@@ -11,6 +12,7 @@ interface Props {
   astronauta: Astronauta | null;
   abierta: boolean;
   evaluacion: Evaluacion | null;
+  fcActual: number | null;
   sinSenal: boolean;
   onCerrar: () => void;
 }
@@ -21,7 +23,7 @@ const formatoHoras = (h: number) => (Number.isInteger(h) ? `${h} h` : `${h.toFix
  * Ficha lateral del astronauta. Usa <dialog> nativo: atrapa el foco, cierra con
  * Escape y devuelve el foco a la tarjeta que la abrió.
  */
-export default function FichaAstronauta({ astronauta: a, abierta, evaluacion, sinSenal, onCerrar }: Props) {
+export default function FichaAstronauta({ astronauta: a, abierta, evaluacion, fcActual, sinSenal, onCerrar }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -75,6 +77,17 @@ export default function FichaAstronauta({ astronauta: a, abierta, evaluacion, si
               {estado} ahora
               {evaluacion && !sinSenal ? `, índice ${evaluacion.indice} de 100` : ""}
             </p>
+          </div>
+
+          <div className="flex items-center gap-4 rounded-lg bg-panel-2 p-4">
+            <Corazon fc={sinSenal ? null : fcActual} color={colorEstado} className="size-10" />
+            <div>
+              <p className="text-sm text-tenue">Pulso ahora</p>
+              <p className="font-mono text-2xl font-semibold tabular-nums" style={{ color: colorEstado }}>
+                {fcActual !== null && !sinSenal ? fcActual : "--"}
+                <span className="ml-1 text-xs font-normal text-tenue">lpm</span>
+              </p>
+            </div>
           </div>
 
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">

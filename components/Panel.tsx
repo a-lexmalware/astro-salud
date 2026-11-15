@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { evaluar, METRICAS, peorNivel } from "@/lib/salud";
-import { SEGUNDOS_PULSO_VIGENTE } from "@/lib/pulso";
 import { Simulador } from "@/lib/simulador";
 import { supabase } from "@/lib/supabase";
 import { ASTRONAUTAS, type Escenario, type Lectura, type Nivel } from "@/lib/tipos";
@@ -62,8 +61,6 @@ export default function Panel() {
   // Hora local en que llegó la última lectura en vivo de cada astronauta. Evita
   // comparar el reloj del navegador con el de quien generó la lectura.
   const [recibido, setRecibido] = useState<Record<string, number>>({});
-  // Hora local de llegada del último pulso real enviado desde el teléfono (Gadgetbridge).
-  const [pulsoTelefono, setPulsoTelefono] = useState<Record<string, number>>({});
   const [ahora, setAhora] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   // El id se conserva al cerrar para que la ficha mantenga su contenido mientras sale.
@@ -131,12 +128,6 @@ export default function Panel() {
         const llegada = Date.now();
         setRecibido((r) => ({ ...r, [lectura.astronauta_id]: llegada }));
         setHistorial((h) => agregar(h, [lectura]));
-      })
-      // Pulso real del teléfono: lo aplica el script del simulador; aquí solo se señala.
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pulso_reloj" }, (p) => {
-        const id = String((p.new as { astronauta_id?: string }).astronauta_id);
-        const llegada = Date.now();
-        setPulsoTelefono((r) => ({ ...r, [id]: llegada }));
       })
       // Escenarios cambiados desde otro panel abierto.
       .on("postgres_changes", { event: "*", schema: "public", table: "escenarios" }, (p) => {
@@ -285,11 +276,6 @@ export default function Panel() {
             sinSenal={e.sinSenal}
             segundosDesde={e.segundosDesde}
             onEscenario={(esc) => cambiarEscenario(e.astronauta.id, esc)}
-            pulsoTelefono={
-              ahora !== null &&
-              pulsoTelefono[e.astronauta.id] !== undefined &&
-              ahora - pulsoTelefono[e.astronauta.id] <= SEGUNDOS_PULSO_VIGENTE * 1000
-            }
             onAbrirFicha={() => setFicha({ id: e.astronauta.id, abierta: true })}
           />
         ))}
@@ -302,6 +288,7 @@ export default function Panel() {
             astronauta={e?.astronauta ?? null}
             abierta={ficha?.abierta ?? false}
             evaluacion={e?.evaluacion ?? null}
+            fcActual={e?.ultima?.fc ?? null}
             sinSenal={e?.sinSenal ?? false}
             onCerrar={() => setFicha((f) => (f ? { ...f, abierta: false } : f))}
           />
