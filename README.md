@@ -18,6 +18,11 @@ Usa "Simular escenario" en cada tarjeta para provocar una emergencia durante la 
 
 ## Guion de demo (3 minutos)
 
+La app abre en **Mi estado**: el visor del casco de un tripulante (núcleo de salud en 3D, signos
+vitales, "¿Qué hago ahora?" con los pasos del protocolo y el enlace con la Tierra). Con los círculos de
+abajo cambias de tripulante y con la pestaña **Tripulación** ves el panel de los cuatro, con sus
+fichas y análisis de OSDR. Los incidentes automáticos se pausan desde esa pestaña.
+
 1. **Línea base personal.** En la tarjeta de Valeria elige *Simular → Deterioro lento*. En un minuto
    aproximadamente pasa a **Vigilar** con alertas ◆ ("frecuencia cardiaca 15 % por arriba de tu
    normal"), aunque todos los umbrales siguen en verde. Es lo que en una misión larga pasa en semanas.
@@ -41,6 +46,7 @@ Usa "Simular escenario" en cada tarjeta para provocar una emergencia durante la 
 | Pulso por cámara | Fotopletismografía: canal rojo (dedo) o verde de la frente (cara), filtro pasa banda 0.7–3.5 Hz, periodo por autocorrelación y un latido por periodo. Solo se usa la FC; la HRV de unos segundos es demasiado inestable. | `lib/pulsoCamara.ts`, `components/MedirPulso.tsx` |
 | Enlace con la Tierra | Cada 15 s arma un resumen. Con enlace se envía; en apagón (simulado o sin internet real) se encola y sale al volver. | `lib/enlace.ts`, `components/BarraEnlace.tsx` |
 | Memoria del dispositivo | Guarda en IndexedDB la línea base, el historial reciente y la cola cada 5 s. Al abrir recupera lo de las últimas 12 h. | `lib/almacen.ts` |
+| Visor del casco | Vista "Mi estado" con animaciones (anillos 3D, ondas, estrellas, Tierra, escaneo) que respetan "reducir movimiento". En celular las columnas se apilan. | `components/Visor.tsx`, `app/globals.css` |
 | VIERNES | Asistente por reglas: todo lo que dice sale de las lecturas, la línea base y los protocolos, nunca inventa. Habla con la voz del navegador (sin red en la mayoría de los equipos); escucha con el reconocimiento de Chrome (ese sí usa internet) o por texto. | `lib/viernes.ts`, `lib/protocolos.ts`, `components/Viernes.tsx` |
 | App instalable sin red | Service worker que guarda la página y sus archivos; manifest para instalarla en el celular. Solo se activa en producción (`npm run build && npm start` o Vercel). | `public/sw.js`, `app/manifest.ts`, `components/RegistroSW.tsx` |
 

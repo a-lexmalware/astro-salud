@@ -40,9 +40,27 @@ function vozEnEspanol(): SpeechSynthesisVoice | null {
   );
 }
 
+/** Lo que VIERNES recuerda al cambiar de vista (el panel la vuelve a montar). */
+export interface MemoriaViernes {
+  frase: string;
+  vozActiva: boolean;
+  guia: Guia | null;
+  huella: Huella | null;
+}
+
+export const memoriaInicial = (): MemoriaViernes => ({
+  frase: "Viernes en espera. Pregúntame cómo está la tripulación.",
+  vozActiva: false,
+  guia: null,
+  huella: null,
+});
+
 interface Props {
   ctx: ContextoViernes;
   onAccion: (a: Accion) => void;
+  /** Lo que recordaba antes de volver a montarse, y cómo avisar al panel de cambios. */
+  memoria: MemoriaViernes;
+  onMemoria: (m: Partial<MemoriaViernes>) => void;
 }
 
 type Modo = "reposo" | "hablando" | "escuchando";
@@ -52,18 +70,19 @@ type Modo = "reposo" | "hablando" | "escuchando";
  * internet en la mayoría de los equipos) y escucha con el reconocimiento de
  * Chrome si está disponible; si no, se le escribe. Lo que dice sale de lib/viernes.ts.
  */
-export default function Viernes({ ctx, onAccion }: Props) {
-  const [frase, setFrase] = useState("Viernes en espera. Pregúntame cómo está la tripulación.");
-  const [vozActiva, setVozActiva] = useState(false);
+export default function Viernes({ ctx, onAccion, memoria, onMemoria }: Props) {
+  const [frase, setFrase] = useState(memoria.frase);
+  const [vozActiva, setVozActiva] = useState(memoria.vozActiva);
   const [modo, setModo] = useState<Modo>("reposo");
-  const [guia, setGuia] = useState<Guia | null>(null);
+  const [guia, setGuia] = useState<Guia | null>(memoria.guia);
   const [texto, setTexto] = useState("");
   const [puedeEscuchar, setPuedeEscuchar] = useState(false);
 
   const ctxRef = useRef(ctx);
   const guiaRef = useRef(guia);
   const vozRef = useRef(vozActiva);
-  const huella = useRef<Huella | null>(null);
+  const huella = useRef<Huella | null>(memoria.huella);
+  const onMemoriaRef = useRef(onMemoria);
   const oyente = useRef<Reconocimiento | null>(null);
   const onAccionRef = useRef(onAccion);
   useEffect(() => {
@@ -71,7 +90,11 @@ export default function Viernes({ ctx, onAccion }: Props) {
     guiaRef.current = guia;
     vozRef.current = vozActiva;
     onAccionRef.current = onAccion;
+    onMemoriaRef.current = onMemoria;
   });
+  useEffect(() => {
+    onMemoriaRef.current({ frase, vozActiva, guia });
+  }, [frase, vozActiva, guia]);
 
   useEffect(() => {
     // Solo se sabe en el navegador, después de montar.
@@ -80,7 +103,6 @@ export default function Viernes({ ctx, onAccion }: Props) {
     // Algunos navegadores cargan las voces después.
     window.speechSynthesis?.getVoices();
     return () => {
-      window.speechSynthesis?.cancel();
       oyente.current?.stop();
     };
   }, []);
@@ -131,6 +153,7 @@ export default function Viernes({ ctx, onAccion }: Props) {
   useEffect(() => {
     const { textos, huella: nueva } = avisos(huella.current, ctxRef.current);
     huella.current = nueva;
+    onMemoriaRef.current({ huella: nueva });
     textos.forEach((t) => decir(t));
   }, [firma, decir]);
 

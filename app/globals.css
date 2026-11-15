@@ -234,3 +234,151 @@ body {
   .nucleo-viernes,
   .orbe-viernes .eco-viernes { animation: none !important; }
 }
+
+/* ===== Visor del casco: "Mi estado" desde dentro del casco ===== */
+.visor-escena {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #04060c;
+  color: #e8eef8;
+  isolation: isolate;
+}
+.visor-contenido { position: relative; z-index: 2; }
+.visor-cielo { position: absolute; inset: 0 -60px 0 0; z-index: 0; animation: visor-deriva 60s linear infinite alternate; }
+.visor-estrella { position: absolute; border-radius: 50%; background: #fff; animation: visor-titila 3s ease-in-out infinite; }
+.visor-tierra {
+  position: absolute; z-index: 0; left: 50%; bottom: -2200px; width: 2600px; height: 2600px; margin-left: -1300px;
+  border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 50% 0%, #2d6fb8 0%, #123a6b 18%, #071a33 38%, #04060c 60%);
+  animation: visor-atmosfera 6s ease-in-out infinite;
+}
+.visor-nubes {
+  position: absolute; inset: 0; border-radius: 50%; opacity: 0.35;
+  background:
+    radial-gradient(ellipse 160px 26px at 30% 4%, rgb(255 255 255 / 0.55), transparent 70%),
+    radial-gradient(ellipse 220px 30px at 58% 3%, rgb(255 255 255 / 0.45), transparent 70%),
+    radial-gradient(ellipse 120px 20px at 74% 6%, rgb(255 255 255 / 0.5), transparent 70%),
+    radial-gradient(ellipse 180px 24px at 14% 9%, rgb(255 255 255 / 0.4), transparent 70%),
+    radial-gradient(ellipse 200px 28px at 88% 10%, rgb(255 255 255 / 0.4), transparent 70%);
+  animation: visor-gira 240s linear infinite;
+}
+.visor-marco {
+  position: absolute; inset: 14px; z-index: 1; pointer-events: none; overflow: hidden;
+  border-radius: 46% / 30%; border: 2px solid rgb(111 227 255 / 0.2);
+  box-shadow: inset 0 0 140px rgb(4 6 12 / 0.95);
+}
+.visor-escaneo {
+  position: absolute; left: 0; right: 0; top: 0; height: 160px;
+  background: linear-gradient(180deg, transparent, rgb(111 227 255 / 0.06) 45%, rgb(111 227 255 / 0.12) 50%, rgb(111 227 255 / 0.06) 55%, transparent);
+  animation: visor-escanea 7s linear infinite;
+}
+.visor-interferencia {
+  position: absolute; inset: 14px; z-index: 1; pointer-events: none; border-radius: 46% / 30%;
+  background: repeating-linear-gradient(0deg, rgb(255 90 95 / 0.35) 0 1px, transparent 1px 4px);
+  animation: visor-ruido 0.35s steps(4) infinite;
+}
+.visor-cinta {
+  max-width: 420px; height: 26px; align-self: center;
+  border-top: 1px solid rgb(111 227 255 / 0.5);
+  background: repeating-linear-gradient(90deg, rgb(111 227 255 / 0.55) 0 1px, transparent 1px 28px);
+  mask-image: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent);
+  animation: visor-cinta 6s linear infinite, visor-barrido 4s ease-in-out infinite;
+}
+
+/* Tres columnas en pantalla grande; en tablet y celular, una debajo de otra. */
+.visor-rejilla { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1100px) {
+  .visor-rejilla { grid-template-columns: minmax(300px, 340px) minmax(0, 1fr) minmax(320px, 360px); align-items: start; }
+}
+.visor-panel {
+  display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; border-radius: 18px;
+  background: rgb(12 20 36 / 0.74); border: 1px solid rgb(111 227 255 / 0.22);
+  box-shadow: 0 30px 60px rgb(0 0 0 / 0.5); backdrop-filter: blur(6px);
+}
+.visor-titulo { font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #6fe3ff; font-weight: 500; }
+@media (min-width: 1100px) {
+  .visor-panel-izq { transform-origin: left center; animation: visor-entra-izq 0.9s cubic-bezier(.2,.8,.2,1) both, visor-flota-izq 8s 0.9s ease-in-out infinite; }
+  .visor-panel-der { transform-origin: right center; animation: visor-entra-der 0.9s 0.15s cubic-bezier(.2,.8,.2,1) both, visor-flota-der 8s 1.05s ease-in-out infinite; }
+}
+.visor-boton {
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 10px;
+  border: 1px solid rgb(111 227 255 / 0.5); color: #6fe3ff; font-weight: 500;
+}
+.visor-boton:hover { background: rgb(111 227 255 / 0.1); }
+.visor-barra::after {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 40%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.9), transparent);
+  animation: visor-brillo 3.5s ease-in-out infinite;
+}
+
+/* Núcleo: anillos en 3D, satélites, ondas y el índice al centro. */
+.visor-nucleo-zona {
+  position: relative; display: grid; place-items: center; min-height: 460px; perspective: 1100px;
+  animation: visor-crece 1s cubic-bezier(.2,.8,.2,1) both;
+}
+.visor-anillos { position: absolute; width: 440px; height: 440px; max-width: 92vw; max-height: 92vw; transform-style: preserve-3d; transform: rotateX(70deg); }
+.visor-anillo { position: absolute; border-radius: 50%; }
+.visor-anillo-a { inset: 0; border: 2px solid; animation: visor-gira 26s linear infinite; }
+.visor-anillo-b { inset: 52px; border: 1px dashed rgb(111 227 255 / 0.55); animation: visor-gira-inv 38s linear infinite; }
+.visor-anillo-c { inset: -56px; border: 1px solid rgb(111 227 255 / 0.18); animation: visor-gira 60s linear infinite; }
+.visor-sat { position: absolute; bottom: -6px; left: 30%; width: 12px; height: 12px; border-radius: 50%; }
+.visor-sat-b { top: 40%; bottom: auto; left: auto; right: -5px; width: 10px; height: 10px; background: #e8eef8; box-shadow: 0 0 14px #e8eef8; }
+.visor-sat-c { top: -7px; bottom: auto; left: 50%; width: 14px; height: 14px; background: #6fe3ff; box-shadow: 0 0 16px #6fe3ff; }
+.visor-nucleo {
+  position: relative; z-index: 1; width: 230px; height: 230px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  background: radial-gradient(circle at 35% 30%, rgb(111 227 255 / 0.16), rgb(8 14 28 / 0.94) 70%);
+  border: 1px solid rgb(111 227 255 / 0.3);
+}
+.visor-onda {
+  position: absolute; width: 230px; height: 230px; border-radius: 50%; border: 2px solid;
+  animation: visor-onda 2.6s ease-out infinite;
+}
+.visor-onda-2 { animation-delay: 1.3s; }
+.visor-resumen { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; color: #c9d3e3; padding: 0 12px; }
+.visor-enlace {
+  padding: 14px 20px; border-radius: 14px; border: 1px solid rgb(111 227 255 / 0.22); background: rgb(12 20 36 / 0.8);
+  animation: visor-sube 0.8s 0.3s cubic-bezier(.2,.8,.2,1) both;
+}
+.visor-apagon .visor-enlace { background: repeating-linear-gradient(-45deg, rgb(255 90 95 / 0.1) 0 12px, rgb(12 20 36 / 0.85) 12px 24px); }
+.visor-aparece { animation: aparece var(--mov-entrada) var(--curva-salida); }
+
+/* Pestañas Visor / Tripulación */
+.pestanas { display: inline-flex; padding: 3px; border-radius: 999px; border: 1px solid rgb(111 227 255 / 0.3); background: rgb(8 14 28 / 0.6); }
+.pestanas button { min-height: 36px; padding: 0 14px; border-radius: 999px; font-size: 14px; color: #a9b5c8; }
+.pestanas button[aria-pressed="true"] { background: #6fe3ff; color: #04060c; font-weight: 600; }
+
+@keyframes visor-titila { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.15; } }
+@keyframes visor-deriva { to { transform: translateX(-60px); } }
+@keyframes visor-gira { to { transform: rotate(360deg); } }
+@keyframes visor-gira-inv { to { transform: rotate(-360deg); } }
+@keyframes visor-escanea { from { transform: translateY(-160px); } to { transform: translateY(110vh); } }
+@keyframes visor-ruido { 0% { background-position: 0 0; opacity: 0.18; } 40% { opacity: 0.24; } 70% { opacity: 0.06; } 100% { background-position: 0 40px; opacity: 0.18; } }
+@keyframes visor-atmosfera {
+  0%, 100% { box-shadow: 0 -18px 90px rgb(111 227 255 / 0.3), inset 0 22px 40px rgb(170 225 255 / 0.3); }
+  50% { box-shadow: 0 -26px 130px rgb(111 227 255 / 0.5), inset 0 26px 50px rgb(170 225 255 / 0.45); }
+}
+@keyframes visor-cinta { to { background-position: -280px 0; } }
+@keyframes visor-barrido { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.6; } }
+@keyframes visor-onda { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(1.9); opacity: 0; } }
+@keyframes visor-brillo { from { transform: translateX(-120%); } to { transform: translateX(320%); } }
+@keyframes visor-crece { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: none; } }
+@keyframes visor-sube { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+@keyframes visor-entra-izq { from { opacity: 0; transform: perspective(1200px) rotateY(55deg) translateX(-80px); } to { opacity: 1; transform: perspective(1200px) rotateY(14deg); } }
+@keyframes visor-entra-der { from { opacity: 0; transform: perspective(1200px) rotateY(-55deg) translateX(80px); } to { opacity: 1; transform: perspective(1200px) rotateY(-14deg); } }
+@keyframes visor-flota-izq { 0%, 100% { transform: perspective(1200px) rotateY(14deg) translateY(0); } 50% { transform: perspective(1200px) rotateY(11deg) translateY(-10px); } }
+@keyframes visor-flota-der { 0%, 100% { transform: perspective(1200px) rotateY(-14deg) translateY(0); } 50% { transform: perspective(1200px) rotateY(-11deg) translateY(-10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .visor-cielo, .visor-estrella, .visor-tierra, .visor-nubes, .visor-escaneo, .visor-interferencia, .visor-cinta,
+  .visor-panel-izq, .visor-panel-der, .visor-barra::after, .visor-nucleo-zona, .visor-anillo-a, .visor-anillo-b,
+  .visor-anillo-c, .visor-onda, .visor-enlace, .visor-aparece { animation: none !important; }
+}
+
+/* Celular y tablet: el núcleo va primero y el marco del casco se oculta para no cruzar el texto. */
+@media (max-width: 1099px) {
+  .visor-nucleo-zona { order: -1; min-height: 380px; }
+  .visor-anillos { width: 320px; height: 320px; }
+  .visor-marco { display: none; }
+}

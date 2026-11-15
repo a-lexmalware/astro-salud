@@ -14,7 +14,8 @@ import { ASTRONAUTAS, type Escenario, type Lectura, type Nivel } from "@/lib/tip
 import BarraEnlace from "./BarraEnlace";
 import FichaAstronauta from "./FichaAstronauta";
 import MedirPulso from "./MedirPulso";
-import Viernes from "./Viernes";
+import Viernes, { memoriaInicial, type MemoriaViernes } from "./Viernes";
+import Visor from "./Visor";
 import TarjetaAstronauta, { COLOR, ETIQUETA } from "./TarjetaAstronauta";
 
 const MAX_PUNTOS = 60; // lecturas guardadas por astronauta para las gráficas
@@ -107,6 +108,15 @@ export default function Panel() {
   const [sinInternet, setSinInternet] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [restaurado, setRestaurado] = useState<number | null>(null);
+
+  // Vista principal: el visor del casco de un tripulante, o el panel de toda la tripulación.
+  const [vista, setVista] = useState<"visor" | "tripulacion">("visor");
+  const [yo, setYo] = useState(ASTRONAUTAS[0].id);
+  const [memoriaViernes, setMemoriaViernes] = useState<MemoriaViernes>(memoriaInicial);
+  const recordarViernes = useCallback(
+    (m: Partial<MemoriaViernes>) => setMemoriaViernes((prev) => ({ ...prev, ...m })),
+    [],
+  );
 
   // Pulso medido con la cámara: sustituye al simulado de ese astronauta.
   const [camara, setCamara] = useState<string | null>(null);
@@ -436,10 +446,39 @@ export default function Panel() {
     apagon: apagonEfectivo,
     enCola: enlace.cola.length,
   };
+  const avisarMedica = (texto: string) => {
+    const medica = ASTRONAUTAS.find((x) => /médic/i.test(x.rol));
+    setAviso(`Aviso enviado a ${medica ? medica.nombre : "la médica de a bordo"}: ${texto}.`);
+  };
+
+  const pestanas = (
+    <div className="pestanas" role="group" aria-label="Vista">
+      <button type="button" aria-pressed={vista === "visor"} onClick={() => setVista("visor")}>
+        Mi estado
+      </button>
+      <button type="button" aria-pressed={vista === "tripulacion"} onClick={() => setVista("tripulacion")}>
+        Tripulación
+      </button>
+    </div>
+  );
+
+  const sensor = camara && (
+    <MedirPulso
+      key={camara}
+      astronauta={ASTRONAUTAS.find((a) => a.id === camara)!}
+      onMedicion={(m) => recibirPulso(camara, m)}
+      onCerrar={() => setCamara(null)}
+    />
+  );
+
+
   const accionViernes = (a: Accion) => {
     if (a.tipo === "medir") setCamara(a.id);
     else if (a.tipo === "apagon") fijarApagon(a.activar);
   };
+  const asistente = (
+    <Viernes ctx={ctxViernes} onAccion={accionViernes} memoria={memoriaViernes} onMemoria={recordarViernes} />
+  );
   const alertas = conDatos.flatMap((e) =>
     e.evaluacion!.alertas.map((a) => ({ ...a, nombre: e.astronauta.nombre, id: `${e.astronauta.id}-${a.metrica}` })),
   );
@@ -481,6 +520,43 @@ export default function Panel() {
           ),
         ].join(" ");
 
+  if (vista === "visor") {
+    const e = estados.find((x) => x.astronauta.id === yo) ?? estados[0];
+    const desv = desvDe(e.astronauta.id);
+    return (
+      <>
+        <Visor
+          datos={{
+            astronauta: e.astronauta,
+            historial: historial[e.astronauta.id],
+            evaluacion: e.evaluacion,
+            desviaciones: desv,
+            protocolos: protocolosPara(e.evaluacion, desv),
+            aprendiendo: aprendiendo[e.astronauta.id] ?? true,
+            sinSenal: e.sinSenal,
+            pulsoReal: camara === e.astronauta.id && conPulsoReal === e.astronauta.id,
+          }}
+          tripulacion={ctxViernes.tripulantes.map((t) => ({ id: t.id, nombre: t.nombre, nivel: t.nivel, vigilar: t.vigilar }))}
+          onElegir={setYo}
+          enlace={enlace}
+          apagon={apagonEfectivo}
+          sinInternet={sinInternet}
+          onAlternarApagon={alternarApagon}
+          onMedir={() => setCamara(e.astronauta.id)}
+          onAvisarMedica={avisarMedica}
+          ahora={ahora}
+          diaMision={DIA_DE_MISION}
+          asistente={asistente}
+          pestanas={pestanas}
+          aviso={aviso}
+          escenario={escenarios[e.astronauta.id]}
+          onEscenario={(esc) => elegirEscenario(e.astronauta.id, esc)}
+        />
+        {sensor}
+      </>
+    );
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 sm:px-6 lg:py-12">
       <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
@@ -502,6 +578,8 @@ export default function Panel() {
             </span>
           </p>
         </div>
+        <div className="flex flex-wrap items-end gap-6">
+        {pestanas}
         <div className="sm:text-right">
           <p className="text-sm text-tenue">Día {DIA_DE_MISION} de misión</p>
           <p className="ancho-condensado text-4xl font-semibold leading-tight tabular-nums">
@@ -509,9 +587,10 @@ export default function Panel() {
             <span className="ml-2 text-sm font-normal text-tenue [font-variation-settings:'wdth'_100]">UTC</span>
           </p>
         </div>
+        </div>
       </header>
 
-      <Viernes ctx={ctxViernes} onAccion={accionViernes} />
+      {asistente}
 
       <BarraEnlace
         enlace={enlace}
@@ -649,14 +728,7 @@ export default function Panel() {
         );
       })()}
 
-      {camara && (
-        <MedirPulso
-          key={camara}
-          astronauta={ASTRONAUTAS.find((a) => a.id === camara)!}
-          onMedicion={(m) => recibirPulso(camara, m)}
-          onCerrar={() => setCamara(null)}
-        />
-      )}
+      {sensor}
 
       <section aria-labelledby="bitacora-titulo" className="border-t border-borde pt-5">
         <h2 id="bitacora-titulo" className="ancho-expandido text-lg font-semibold">
