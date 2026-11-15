@@ -31,6 +31,10 @@ interface Props {
   onAbrirFicha: () => void;
 }
 
+/**
+ * Columna de un tripulante, como en la plantilla oficial de una misión: el
+ * retrato arriba, una franja con su estado y debajo sus lecturas.
+ */
 export default function TarjetaAstronauta({
   astronauta,
   historial,
@@ -48,100 +52,101 @@ export default function TarjetaAstronauta({
   const colorDe = (n: Nivel) => (sinSenal ? TENUE : COLOR[n]);
   const idSelect = `escenario-${astronauta.id}`;
   const estado = sinSenal ? "Sin señal" : evaluacion ? ETIQUETA[nivel] : "Esperando datos";
+  const vivo = <K extends keyof Lectura>(k: K) => (ultima && !sinSenal ? ultima[k] : null);
 
-  const fc = METRICAS.find((m) => m.id === "fc")!;
-  const spo2 = METRICAS.find((m) => m.id === "spo2")!;
   const nFc = evaluacion?.porMetrica.fc ?? "verde";
   const nSpo2 = evaluacion?.porMetrica.spo2 ?? "verde";
 
   return (
-    <article
-      className="@container flex flex-col gap-5 rounded-2xl border bg-panel p-5 transition-colors"
-      style={{ borderColor: vigente && nivel !== "verde" ? color : "var(--color-borde)" }}
-    >
-      {/* El encabezado envuelve al botón: un <h2> no puede ir dentro de un <button>. */}
-      <h2>
-        <button
-          type="button"
-          onClick={onAbrirFicha}
-          aria-haspopup="dialog"
-          className="group -m-2 flex w-[calc(100%+1rem)] items-center gap-4 rounded-xl p-2 text-left hover:bg-panel-2 focus-visible:outline-2 focus-visible:outline-acento"
-        >
-          <AnilloIndice indice={vigente ? evaluacion.indice : null} color={color}>
-            <FotoAstronauta astronauta={astronauta} tamano="mini" />
-          </AnilloIndice>
-          <span className="min-w-0 flex-1">
-            <span className="font-rotulo block text-2xl font-semibold leading-none">{astronauta.nombre}</span>
-            <span className="mt-1 block text-sm font-normal text-tenue">{astronauta.rol}</span>
-            <span className="mt-1.5 flex items-center gap-1.5 text-sm font-medium" style={{ color }}>
-              <span
-                className={`inline-block size-2 rounded-full ${nivel === "rojo" && vigente ? "pulso" : ""}`}
-                style={{ background: color }}
-                aria-hidden
-              />
-              <span>
-                {estado}
-                {vigente && <span className="font-normal text-tenue">, índice {evaluacion.indice} de 100</span>}
-              </span>
-            </span>
+    <article className="flex flex-col">
+      {/* El botón está en el encabezado (un <h2> no puede ir dentro de un <button>) y su área
+          se estira sobre el retrato con ::after, así toda la parte de arriba abre la ficha. */}
+      <div className="group relative">
+        <div className="relative overflow-hidden rounded-[3px]">
+          <FotoAstronauta
+            astronauta={astronauta}
+            sizes="(min-width: 1280px) 22vw, (min-width: 768px) 45vw, 100vw"
+            // En el teléfono, más apaisado para no ocupar toda la pantalla.
+            aspecto="aspect-[5/4] md:aspect-[4/5]"
+            className="transition-[filter] duration-200 group-hover:brightness-110"
+          />
+          {/* Franja de estado: el único color fuerte de la columna. */}
+          <span
+            className={`absolute inset-x-0 bottom-0 h-1.5 ${vigente && nivel === "rojo" ? "franja-critica" : ""}`}
+            style={{ background: color }}
+            aria-hidden
+          />
+        </div>
+        <div className="mt-4 flex items-baseline justify-between gap-3">
+          <h2 className="ancho-expandido text-xl font-semibold leading-tight tracking-tight">
+            <button
+              type="button"
+              onClick={onAbrirFicha}
+              aria-haspopup="dialog"
+              className="text-left after:absolute after:inset-0 after:rounded-[3px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4 focus-visible:after:outline-acento"
+            >
+              {astronauta.nombre}
+            </button>
+          </h2>
+          <span className="shrink-0 text-sm text-tenue underline-offset-4 group-hover:text-texto group-hover:underline" aria-hidden>
+            Abrir ficha
           </span>
-          <svg viewBox="0 0 16 16" className="size-4 shrink-0 text-tenue group-hover:text-texto" aria-hidden>
-            <path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
-          <span className="sr-only">Ver ficha</span>
-        </button>
-      </h2>
+        </div>
+        <p className="mt-1 text-sm text-tenue">{astronauta.rol}</p>
+      </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Vital
-          icono={<Corazon fc={ultima && !sinSenal ? ultima.fc : null} color={colorDe(nFc)} className="size-5" />}
+      <p className="mt-3 flex items-baseline gap-2 text-sm" style={{ color }}>
+        <span className="font-semibold">{estado}</span>
+        {vigente && <span className="text-tenue">índice de salud {evaluacion.indice}</span>}
+      </p>
+
+      <div className="mt-5 grid grid-cols-2 gap-x-4 border-t border-borde pt-4">
+        <Lectura
+          icono={<Corazon fc={vivo("fc")} color={colorDe(nFc)} className="size-5" />}
           etiqueta="Pulso"
-          titulo={fc.etiqueta}
+          titulo="Frecuencia cardiaca"
           valor={ultima?.fc ?? null}
-          unidad={fc.unidad}
+          unidad="lpm"
           color={colorDe(nFc)}
           serie={historial.map((l) => l.fc)}
         />
-        <Vital
-          icono={<GotaOxigeno spo2={ultima && !sinSenal ? ultima.spo2 : null} color={colorDe(nSpo2)} className="size-5" />}
+        <Lectura
+          icono={<GotaOxigeno spo2={vivo("spo2")} color={colorDe(nSpo2)} className="size-5" />}
           etiqueta="Oxígeno"
-          titulo={spo2.etiqueta}
+          titulo="Oxígeno en sangre"
           valor={ultima?.spo2 ?? null}
-          unidad={spo2.unidad}
+          unidad="%"
           color={colorDe(nSpo2)}
           serie={historial.map((l) => l.spo2)}
         />
       </div>
 
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 @md:grid-cols-4">
+      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-borde pt-4 text-sm">
         {METRICAS.filter((m) => m.id !== "fc" && m.id !== "spo2").map((m) => {
           const n = evaluacion?.porMetrica[m.id] ?? "verde";
           const valor = ultima ? ultima[m.id] : null;
-          const colorIcono = sinSenal ? TENUE : n === "verde" ? "var(--color-tenue)" : COLOR[n];
-          const vivo = valor !== null && !sinSenal ? valor : null;
+          const colorValor = sinSenal ? TENUE : n === "verde" ? undefined : COLOR[n];
+          const colorIcono = sinSenal ? TENUE : n === "verde" ? TENUE : COLOR[n];
           return (
             <div key={m.id} className="min-w-0">
-              <dt className="flex items-center gap-1.5 text-xs text-tenue">
+              <dt className="flex items-center gap-1.5 text-tenue">
                 {m.id === "temp" && (
-                  <Termometro temp={vivo} color={colorIcono} alerta={!sinSenal && n !== "verde"} className="size-4" />
+                  <Termometro temp={vivo("temp")} color={colorIcono} alerta={!sinSenal && n !== "verde"} className="size-4" />
                 )}
-                {m.id === "sueno" && <LunaSueno horas={vivo} color={colorIcono} className="size-4" />}
+                {m.id === "sueno" && <LunaSueno horas={vivo("sueno")} color={colorIcono} className="size-4" />}
                 <span className="truncate">{m.etiqueta}</span>
               </dt>
-              <dd
-                className="mt-0.5 font-mono text-base tabular-nums"
-                style={{ color: sinSenal ? TENUE : n === "verde" ? undefined : COLOR[n] }}
-              >
+              <dd className="ancho-condensado mt-0.5 text-lg font-semibold tabular-nums" style={{ color: colorValor }}>
                 {valor === null ? "--" : valor.toFixed(m.decimales)}
-                <span className="ml-1 font-sans text-xs text-tenue">
-                  {m.id === "ejercicio" ? `/ ${META_EJERCICIO} ${m.unidad}` : m.unidad}
+                <span className="ml-1 text-xs font-normal text-tenue [font-variation-settings:'wdth'_100]">
+                  {m.id === "ejercicio" ? `de ${META_EJERCICIO} ${m.unidad}` : m.unidad}
                 </span>
               </dd>
               {m.id === "ejercicio" && (
                 // Meta diaria: la barra muestra cuánto falta para los 120 minutos.
-                <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-panel-2" aria-hidden>
+                <div className="mt-1.5 h-0.5 bg-borde" aria-hidden>
                   <div
-                    className="barra-meta h-full rounded-full bg-acento"
+                    className="barra-meta h-full bg-texto"
                     style={{ width: `${Math.min(100, ((valor ?? 0) / META_EJERCICIO) * 100)}%` }}
                   />
                 </div>
@@ -151,33 +156,29 @@ export default function TarjetaAstronauta({
         })}
       </dl>
 
-      <ul className="min-h-5 space-y-1 text-sm">
+      <ul className="mt-4 min-h-5 space-y-1 text-sm">
         {sinSenal ? (
           <li className="text-tenue">No llegan lecturas del reloj. Revisa la conexión.</li>
         ) : evaluacion && evaluacion.alertas.length > 0 ? (
           evaluacion.alertas.map((a) => (
             <li key={a.metrica} style={{ color: COLOR[a.nivel] }}>
-              {a.nivel === "rojo" ? "▲" : "●"} {a.mensaje}
+              {a.mensaje}
             </li>
           ))
         ) : (
-          <li className="text-tenue">Sin alertas activas.</li>
+          <li className="text-tenue">Sin alertas.</li>
         )}
       </ul>
 
-      <footer className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-borde pt-4">
-        <p className="text-xs text-tenue">
-          {segundosDesde === null ? "Sin lecturas todavía" : `Última lectura hace ${segundosDesde} s`}
-        </p>
-        <div className="flex items-center gap-2">
-          <label htmlFor={idSelect} className="text-xs text-tenue">
-            Simular
-          </label>
+      <footer className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-5 text-xs text-tenue">
+        <p>{segundosDesde === null ? "Sin lecturas todavía" : `Última lectura hace ${segundosDesde} s`}</p>
+        <label className="flex items-center gap-2" htmlFor={idSelect}>
+          Simular
           <select
             id={idSelect}
             value={escenario}
             onChange={(e) => onEscenario(e.target.value as Escenario)}
-            className="min-h-9 rounded-md border border-borde bg-panel-2 px-2 text-sm text-texto focus-visible:outline-2 focus-visible:outline-acento"
+            className="min-h-9 rounded-[3px] border border-borde bg-fondo px-2 text-sm text-texto focus-visible:outline-2 focus-visible:outline-acento"
           >
             {ESCENARIOS.map((e) => (
               <option key={e.id} value={e.id}>
@@ -185,40 +186,13 @@ export default function TarjetaAstronauta({
               </option>
             ))}
           </select>
-        </div>
+        </label>
       </footer>
     </article>
   );
 }
 
-/** Anillo alrededor de la foto: su recorrido es el índice de salud (0–100). */
-function AnilloIndice({ indice, color, children }: { indice: number | null; color: string; children: React.ReactNode }) {
-  const r = 30;
-  const circunferencia = 2 * Math.PI * r;
-  const lleno = indice === null ? 0 : indice / 100;
-  return (
-    <span className="relative grid size-[4.25rem] shrink-0 place-items-center">
-      <svg viewBox="0 0 68 68" className="absolute inset-0 -rotate-90" aria-hidden>
-        <circle cx="34" cy="34" r={r} fill="none" stroke="var(--color-borde)" strokeWidth="3" />
-        <circle
-          className="anillo-progreso"
-          cx="34"
-          cy="34"
-          r={r}
-          fill="none"
-          stroke={color}
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray={circunferencia}
-          strokeDashoffset={circunferencia * (1 - lleno)}
-        />
-      </svg>
-      {children}
-    </span>
-  );
-}
-
-function Vital({
+function Lectura({
   icono,
   etiqueta,
   titulo,
@@ -236,16 +210,18 @@ function Vital({
   serie: number[];
 }) {
   return (
-    <div className="rounded-xl bg-panel-2 p-3.5" title={titulo}>
+    <div title={titulo}>
       <p className="flex items-center gap-2 text-sm text-tenue">
         {icono}
         {etiqueta}
       </p>
-      <p className="mt-1 font-mono text-3xl font-semibold tabular-nums leading-tight" style={{ color }}>
+      <p className="ancho-condensado mt-1 text-5xl font-bold leading-none tabular-nums" style={{ color }}>
         {valor ?? "--"}
-        <span className="ml-1 font-sans text-xs font-normal text-tenue">{unidad}</span>
+        <span className="ml-1 text-sm font-normal text-tenue [font-variation-settings:'wdth'_100]">{unidad}</span>
       </p>
-      <Sparkline valores={serie} color={color} etiqueta={`Tendencia de ${titulo.toLowerCase()}`} />
+      <div className="mt-2">
+        <Sparkline valores={serie} color={color} etiqueta={`Tendencia de ${titulo.toLowerCase()}`} />
+      </div>
     </div>
   );
 }

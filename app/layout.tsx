@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Barlow_Semi_Condensed } from "next/font/google";
+import { Archivo } from "next/font/google";
 import "./globals.css";
 
-// Condensada de rótulo, como la rotulación de paneles y parches de misión. Solo para nombres.
-const rotulo = Barlow_Semi_Condensed({ subsets: ["latin"], weight: ["500", "600"], variable: "--fuente-rotulo" });
+// Una sola familia con eje de anchura: expandida para la marca y los nombres (como la cinta
+// bordada del mono de vuelo), condensada para las cifras (como lecturas de instrumento).
+const archivo = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--fuente-archivo" });
 
 export const metadata: Metadata = {
   title: "Órbita Vital | Salud de la tripulación",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`h-full antialiased ${rotulo.variable}`}>
+    <html lang="es" className={`h-full antialiased ${archivo.variable}`}>
       <body className="min-h-full">{children}</body>
     </html>
   );

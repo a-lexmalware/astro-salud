@@ -1,19 +1,27 @@
 @import "tailwindcss";
 
 @theme {
+  /* Negro pedido por el cliente; blanco de traje y gris regolito para el texto. */
   --color-fondo: #000000;
-  --color-panel: #0e1524;
-  --color-panel-2: #131c2f;
-  --color-borde: #1f2a42;
-  --color-texto: #e6ecf7;
-  --color-tenue: #8b98b3;
-  --color-acento: #6ea8ff;
-  --color-verde: #3ddc97;
-  --color-amarillo: #ffc857;
-  --color-rojo: #ff5d6c;
-  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
-  --font-rotulo: var(--fuente-rotulo), var(--font-sans);
+  --color-panel: #141414;
+  --color-panel-2: #1c1b19;
+  --color-borde: #2a2926;
+  --color-texto: #eceae4;
+  --color-tenue: #8e8a82;
+  --color-acento: #eceae4;
+  /* El color solo comunica salud. */
+  --color-verde: #5bd69a;
+  --color-amarillo: #f3b23a;
+  --color-rojo: #ff5b4f;
+  --font-sans: var(--fuente-archivo), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Anchuras de Archivo: expandida para nombres, condensada para cifras. */
+@utility ancho-expandido {
+  font-variation-settings: "wdth" 125;
+}
+@utility ancho-condensado {
+  font-variation-settings: "wdth" 68;
 }
 
 /* Tokens de movimiento: la salida es algo más rápida que la entrada. */
@@ -77,60 +85,75 @@ body {
 .anillo-progreso { transition: stroke-dashoffset 600ms var(--curva-salida), stroke 300ms; }
 .barra-meta { transition: width 600ms var(--curva-salida); }
 
-/* Retrato sin foto: iniciales sobre un visor de casco. */
+/* Retrato sin foto: iniciales sobre un fondo neutro. */
 .visor {
-  background:
-    radial-gradient(120% 90% at 30% 20%, rgb(110 168 255 / 0.35), transparent 60%),
-    linear-gradient(160deg, var(--color-panel-2), var(--color-fondo));
-  box-shadow: inset 0 0 0 1px var(--color-borde);
+  background: linear-gradient(180deg, var(--color-panel-2), var(--color-panel));
 }
 
-/* Ficha lateral: <dialog> que entra desde la derecha. */
+/* Dosier del tripulante: <dialog> centrado que aparece con un fundido y un leve acercamiento. */
 .ficha {
-  position: fixed;
-  inset: 0 0 0 auto;
-  width: min(440px, 100vw);
-  max-width: 100vw;
-  height: 100dvh;
-  max-height: 100dvh;
-  margin: 0;
+  width: min(960px, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
   padding: 0;
   overflow-y: auto;
-  border: 0;
-  border-left: 1px solid var(--color-borde);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
   background: var(--color-panel);
   color: var(--color-texto);
-  translate: 100% 0;
+  opacity: 0;
+  scale: 0.98;
   transition:
-    translate var(--mov-salida) ease-in,
+    opacity var(--mov-salida) ease-in,
+    scale var(--mov-salida) ease-in,
     overlay var(--mov-salida) allow-discrete,
     display var(--mov-salida) allow-discrete;
 }
 .ficha[open] {
-  translate: 0 0;
+  opacity: 1;
+  scale: 1;
   transition-duration: var(--mov-entrada);
   transition-timing-function: var(--curva-salida);
 }
 @starting-style {
-  .ficha[open] { translate: 100% 0; }
+  .ficha[open] { opacity: 0; scale: 0.98; }
 }
 .ficha::backdrop {
-  background: rgb(3 6 12 / 0);
+  background: rgb(0 0 0 / 0);
   transition:
     background var(--mov-salida),
     overlay var(--mov-salida) allow-discrete,
     display var(--mov-salida) allow-discrete;
 }
 .ficha[open]::backdrop {
-  background: rgb(3 6 12 / 0.6);
+  background: rgb(0 0 0 / 0.75);
   transition-duration: var(--mov-entrada);
 }
 @starting-style {
-  .ficha[open]::backdrop { background: rgb(3 6 12 / 0); }
+  .ficha[open]::backdrop { background: rgb(0 0 0 / 0); }
+}
+/* En el teléfono ocupa toda la pantalla. */
+@media (max-width: 640px) {
+  .ficha {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
 }
 
+/* Franja de estado bajo el retrato: con estado crítico late despacio. */
+@keyframes franja {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.franja-critica { animation: franja 1.2s ease-in-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
-  .pulso { animation: none; }
+  .pulso,
+  .franja-critica { animation: none; }
   .latido,
   .gota-onda,
   .termometro-alerta { animation: none; }
@@ -140,18 +163,16 @@ body {
   .anillo-progreso,
   .barra-meta,
   .termometro-columna { transition: none; }
-  /* Sin desplazamiento: la ficha solo aparece con un fundido corto. */
+  /* Sin acercamiento: el dosier solo aparece con un fundido corto. */
   .ficha,
   .ficha[open] {
-    translate: 0 0;
-    opacity: 0;
+    scale: 1;
     transition:
       opacity 120ms,
       overlay 120ms allow-discrete,
       display 120ms allow-discrete;
   }
-  .ficha[open] { opacity: 1; }
   @starting-style {
-    .ficha[open] { translate: 0 0; opacity: 0; }
+    .ficha[open] { scale: 1; opacity: 0; }
   }
 }

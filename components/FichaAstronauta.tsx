@@ -20,8 +20,8 @@ interface Props {
 const formatoHoras = (h: number) => (Number.isInteger(h) ? `${h} h` : `${h.toFixed(1)} h`);
 
 /**
- * Ficha lateral del astronauta. Usa <dialog> nativo: atrapa el foco, cierra con
- * Escape y devuelve el foco a la tarjeta que la abrió.
+ * Dosier del tripulante, centrado sobre el panel. Usa <dialog> nativo: atrapa
+ * el foco, cierra con Escape y devuelve el foco a la columna que lo abrió.
  */
 export default function FichaAstronauta({ astronauta: a, abierta, evaluacion, fcActual, sinSenal, onCerrar }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -34,7 +34,8 @@ export default function FichaAstronauta({ astronauta: a, abierta, evaluacion, fc
   }, [abierta]);
 
   const nivel: Nivel = evaluacion?.nivel ?? "verde";
-  const colorEstado = sinSenal || !evaluacion ? "var(--color-tenue)" : COLOR[nivel];
+  const vigente = !!evaluacion && !sinSenal;
+  const color = vigente ? COLOR[nivel] : "var(--color-tenue)";
   const estado = sinSenal ? "Sin señal" : evaluacion ? ETIQUETA[nivel] : "Esperando datos";
 
   return (
@@ -43,72 +44,80 @@ export default function FichaAstronauta({ astronauta: a, abierta, evaluacion, fc
       className="ficha"
       aria-labelledby="ficha-nombre"
       onClose={onCerrar}
-      // Clic en el fondo (fuera del panel) cierra la ficha.
+      // Clic en el fondo oscuro (fuera del dosier) lo cierra.
       onClick={(e) => e.target === e.currentTarget && ref.current?.close()}
     >
       {a && (
-        <div className="flex min-h-full flex-col gap-6 p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-tenue">Ficha de tripulante</p>
-            <button
-              type="button"
-              onClick={() => ref.current?.close()}
-              className="grid size-10 place-items-center rounded-md border border-borde bg-panel-2 text-tenue hover:border-acento hover:text-texto focus-visible:outline-2 focus-visible:outline-acento"
-              aria-label="Cerrar ficha"
-              title="Cerrar (Esc)"
-            >
-              <svg viewBox="0 0 16 16" className="size-4" aria-hidden>
-                <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-            </button>
+        <div className="grid md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+          <div className="relative">
+            <FotoAstronauta
+              astronauta={a}
+              alt={`Retrato de ${a.nombre}`}
+              sizes="(max-width: 768px) 100vw, 400px"
+              aspecto="aspect-[5/4] md:aspect-auto md:h-full"
+            />
+            <span className="absolute inset-x-0 bottom-0 h-1.5" style={{ background: color }} aria-hidden />
           </div>
 
-          <FotoAstronauta astronauta={a} tamano="retrato" alt={`Foto de ${a.nombre}`} />
-
-          <div>
-            <h2 id="ficha-nombre" className="font-rotulo text-4xl font-semibold leading-none">
-              {a.nombre}
-            </h2>
-            <p className="mt-2 text-tenue">
-              {a.rol}, indicativo «{a.indicativo}»
-            </p>
-            <p className="mt-3 flex items-center gap-2 text-sm font-medium" style={{ color: colorEstado }}>
-              <span className="inline-block size-2.5 rounded-full" style={{ background: colorEstado }} aria-hidden />
-              {estado} ahora
-              {evaluacion && !sinSenal ? `, índice ${evaluacion.indice} de 100` : ""}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4 rounded-lg bg-panel-2 p-4">
-            <Corazon fc={sinSenal ? null : fcActual} color={colorEstado} className="size-10" />
-            <div>
-              <p className="text-sm text-tenue">Pulso ahora</p>
-              <p className="font-mono text-2xl font-semibold tabular-nums" style={{ color: colorEstado }}>
-                {fcActual !== null && !sinSenal ? fcActual : "--"}
-                <span className="ml-1 text-xs font-normal text-tenue">lpm</span>
-              </p>
+          <div className="flex flex-col gap-7 p-6 sm:p-8">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 id="ficha-nombre" className="ancho-expandido text-3xl font-semibold leading-tight tracking-tight">
+                  {a.nombre}
+                </h2>
+                <p className="mt-1 text-tenue">
+                  {a.rol}. Indicativo por radio: {a.indicativo}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => ref.current?.close()}
+                className="grid size-10 shrink-0 place-items-center rounded-[3px] border border-borde text-tenue hover:border-texto hover:text-texto focus-visible:outline-2 focus-visible:outline-acento"
+                aria-label="Cerrar ficha"
+                title="Cerrar (Esc)"
+              >
+                <svg viewBox="0 0 16 16" className="size-4" aria-hidden>
+                  <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </button>
             </div>
+
+            <div className="flex items-center gap-5 border-y border-borde py-5">
+              <Corazon fc={sinSenal ? null : fcActual} color={color} className="size-12" />
+              <div>
+                <p className="ancho-condensado text-6xl font-bold leading-none tabular-nums" style={{ color }}>
+                  {fcActual !== null && !sinSenal ? fcActual : "--"}
+                  <span className="ml-2 text-base font-normal text-tenue [font-variation-settings:'wdth'_100]">
+                    lpm ahora
+                  </span>
+                </p>
+                <p className="mt-2 text-sm" style={{ color }}>
+                  <span className="font-semibold">{estado}</span>
+                  {vigente && <span className="text-tenue">, índice de salud {evaluacion.indice} de 100</span>}
+                </p>
+              </div>
+            </div>
+
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm sm:grid-cols-3">
+              <Dato termino="Edad" valor={`${a.edad} años`} />
+              <Dato termino="Grupo sanguíneo" valor={a.grupoSanguineo} />
+              <Dato termino="Pulso en reposo" valor={`${a.fcReposo} lpm`} />
+              <Dato termino="País" valor={a.pais} />
+              <Dato termino="Especialidad" valor={a.especialidad} />
+              <Dato termino="Días en esta misión" valor={String(a.diasEnMision)} />
+              <Dato termino="Misiones previas" valor={a.misionesPrevias === 0 ? "Ninguna" : String(a.misionesPrevias)} />
+              <Dato termino="Paseos espaciales" valor={a.horasEva === 0 ? "Ninguno" : formatoHoras(a.horasEva)} />
+              <Dato termino="Alergias" valor={a.alergias} />
+              <Dato termino="Agencia" valor={a.agencia} ancho />
+            </dl>
+
+            <section aria-labelledby="ficha-nota" className="border-t border-borde pt-5">
+              <h3 id="ficha-nota" className="text-sm text-tenue">
+                Nota médica
+              </h3>
+              <p className="mt-1 max-w-prose leading-relaxed">{a.notaMedica}</p>
+            </section>
           </div>
-
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <Dato termino="Edad" valor={`${a.edad} años`} />
-            <Dato termino="Grupo sanguíneo" valor={a.grupoSanguineo} />
-            <Dato termino="País" valor={a.pais} />
-            <Dato termino="Especialidad" valor={a.especialidad} />
-            <Dato termino="Días en esta misión" valor={String(a.diasEnMision)} />
-            <Dato termino="Misiones previas" valor={a.misionesPrevias === 0 ? "Ninguna" : String(a.misionesPrevias)} />
-            <Dato termino="Paseos espaciales" valor={a.horasEva === 0 ? "Ninguno" : formatoHoras(a.horasEva)} />
-            <Dato termino="Pulso en reposo" valor={`${a.fcReposo} lpm`} />
-            <Dato termino="Agencia" valor={a.agencia} ancho />
-            <Dato termino="Alergias" valor={a.alergias} ancho />
-          </dl>
-
-          <section aria-labelledby="ficha-nota">
-            <h3 id="ficha-nota" className="text-sm text-tenue">
-              Nota médica
-            </h3>
-            <p className="mt-1 max-w-prose leading-relaxed">{a.notaMedica}</p>
-          </section>
         </div>
       )}
     </dialog>
@@ -117,9 +126,9 @@ export default function FichaAstronauta({ astronauta: a, abierta, evaluacion, fc
 
 function Dato({ termino, valor, ancho = false }: { termino: string; valor: string; ancho?: boolean }) {
   return (
-    <div className={`border-b border-borde pb-2 ${ancho ? "col-span-2" : ""}`}>
+    <div className={ancho ? "col-span-2 sm:col-span-3" : ""}>
       <dt className="text-tenue">{termino}</dt>
-      <dd className="mt-0.5">{valor}</dd>
+      <dd className="mt-0.5 text-base">{valor}</dd>
     </div>
   );
 }

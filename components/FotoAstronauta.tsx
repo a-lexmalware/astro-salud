@@ -3,42 +3,33 @@ import { iniciales, type Astronauta } from "@/lib/tipos";
 
 interface Props {
   astronauta: Astronauta;
-  /** "mini" para la cabecera de la tarjeta, "retrato" para la ficha. */
-  tamano: "mini" | "retrato";
-  /** Para lectores de pantalla; vacío si el nombre ya está al lado. */
+  /** Texto alternativo; vacío si el nombre ya está al lado. */
   alt?: string;
+  /** Ancho aproximado en pantalla, para que Next sirva el tamaño justo. */
+  sizes: string;
+  /** Proporción del retrato (clases de Tailwind). */
+  aspecto?: string;
+  className?: string;
 }
 
-/** Foto del astronauta o, si aún no hay foto, sus iniciales sobre un visor. */
-export default function FotoAstronauta({ astronauta, tamano, alt = "" }: Props) {
-  const mini = tamano === "mini";
+/** Retrato 4:5 del astronauta o, si aún no hay foto, sus iniciales. */
+export default function FotoAstronauta({ astronauta, alt = "", sizes, aspecto = "aspect-[4/5]", className = "" }: Props) {
   if (astronauta.foto) {
-    const caja = mini ? "size-12 rounded-full" : "aspect-[4/5] w-full rounded-lg";
     return (
-      <div className={`relative shrink-0 overflow-hidden bg-panel-2 ${caja}`}>
-        <Image
-          src={astronauta.foto}
-          alt={alt}
-          fill
-          sizes={mini ? "48px" : "(max-width: 640px) 100vw, 440px"}
-          className="object-cover object-[50%_20%]"
-        />
+      <div className={`relative w-full overflow-hidden bg-panel-2 ${aspecto} ${className}`}>
+        <Image src={astronauta.foto} alt={alt} fill sizes={sizes} className="object-cover object-[50%_25%]" />
       </div>
     );
   }
 
-  // Sin foto, el retrato es más bajo para no dejar un hueco vacío.
-  const caja = mini ? "size-12 rounded-full" : "aspect-[3/2] w-full rounded-lg";
   return (
     <div
-      className={`visor relative grid shrink-0 place-items-center overflow-hidden ${caja}`}
+      className={`visor relative grid w-full place-items-center ${aspecto} overflow-hidden ${className}`}
       role={alt ? "img" : undefined}
       aria-label={alt || undefined}
       aria-hidden={alt ? undefined : true}
     >
-      <span className={`font-rotulo font-semibold text-texto ${mini ? "text-lg" : "text-7xl"}`}>
-        {iniciales(astronauta.nombre)}
-      </span>
+      <span className="ancho-expandido text-6xl font-semibold text-tenue">{iniciales(astronauta.nombre)}</span>
     </div>
   );
 }

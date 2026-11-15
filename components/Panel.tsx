@@ -11,6 +11,8 @@ import TarjetaAstronauta, { COLOR, ETIQUETA } from "./TarjetaAstronauta";
 const MAX_PUNTOS = 60; // lecturas guardadas por astronauta para las gráficas
 const INTERVALO_MS = 2000;
 const SEGUNDOS_SIN_SENAL = 10;
+// La misión empezó con la llegada de la comandante: su contador marca el día.
+const DIA_DE_MISION = Math.max(...ASTRONAUTAS.map((a) => a.diasEnMision));
 
 type Historial = Record<string, Lectura[]>;
 type Escenarios = Record<string, Escenario>;
@@ -202,40 +204,31 @@ export default function Panel() {
         ].join(" ");
 
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:py-8">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+    <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 sm:px-6 lg:py-12">
+      <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
         <div>
-          <h1 className="font-rotulo text-4xl font-semibold leading-none sm:text-5xl">Órbita Vital</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-tenue">
-            Salud de la tripulación en tiempo real
+          <h1 className="ancho-expandido text-5xl font-semibold leading-none tracking-tight sm:text-6xl">Órbita Vital</h1>
+          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-tenue">
+            Salud de la tripulación, medida a bordo.
             <span
-              className="rounded-full border border-borde px-2 py-0.5 text-xs"
+              className="rounded-[3px] border border-borde px-1.5 py-0.5 text-xs"
               title={modoDemo ? "Los datos los genera un simulador en este navegador" : "Datos en vivo desde Supabase"}
             >
               {modoDemo ? "Modo demo" : "En vivo"}
             </span>
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="sm:text-right">
-            <p className="text-xs text-tenue">Hora de misión (UTC)</p>
-            <p className="font-mono text-xl tabular-nums">
-              {ahora === null ? "--:--:--" : new Date(ahora).toISOString().slice(11, 19)}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={restablecer}
-            disabled={!hayEscenarioActivo}
-            className="min-h-10 rounded-md border border-borde bg-panel-2 px-3 text-sm font-medium hover:border-acento focus-visible:outline-2 focus-visible:outline-acento disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Restablecer escenarios
-          </button>
+        <div className="sm:text-right">
+          <p className="text-sm text-tenue">Día {DIA_DE_MISION} de misión</p>
+          <p className="ancho-condensado text-4xl font-semibold leading-tight tabular-nums">
+            {ahora === null ? "--:--:--" : new Date(ahora).toISOString().slice(11, 19)}
+            <span className="ml-2 text-sm font-normal text-tenue [font-variation-settings:'wdth'_100]">UTC</span>
+          </p>
         </div>
       </header>
 
       {error && (
-        <p role="alert" className="rounded-lg border border-rojo bg-panel px-4 py-3 text-sm text-rojo">
+        <p role="alert" className="rounded-[3px] border border-rojo px-4 py-3 text-sm text-rojo">
           {error}
         </p>
       )}
@@ -244,23 +237,37 @@ export default function Panel() {
         {anuncio}
       </p>
 
-      <section
-        className="rounded-2xl border bg-panel px-5 py-4"
-        style={{ borderColor: conDatos.length ? COLOR[nivelTripulacion] : "var(--color-borde)" }}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-lg font-semibold" style={{ color: conDatos.length ? COLOR[nivelTripulacion] : undefined }}>
-            {conDatos.length === 0
-              ? "Esperando lecturas de los relojes"
-              : `Tripulación: ${ETIQUETA[nivelTripulacion].toLowerCase()}`}
+      <section className="-mt-4 flex flex-col gap-3 border-y border-borde py-4" aria-label="Estado de la tripulación">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+          <p className="flex items-center gap-3 text-lg">
+            <span
+              className={`inline-block size-2.5 rounded-full ${nivelTripulacion === "rojo" && conDatos.length ? "pulso" : ""}`}
+              style={{ background: conDatos.length ? COLOR[nivelTripulacion] : "var(--color-tenue)" }}
+              aria-hidden
+            />
+            <span>
+              <span className="font-semibold" style={{ color: conDatos.length ? COLOR[nivelTripulacion] : undefined }}>
+                {conDatos.length === 0
+                  ? "Esperando lecturas de los relojes"
+                  : `Tripulación ${ETIQUETA[nivelTripulacion].toLowerCase()}.`}
+              </span>{" "}
+              <span className="text-tenue">
+                {conDatos.length} de {ASTRONAUTAS.length} relojes transmitiendo,{" "}
+                {alertas.length === 0 ? "sin alertas" : `${alertas.length} ${alertas.length === 1 ? "alerta" : "alertas"}`}.
+              </span>
+            </span>
           </p>
-          <p className="text-sm text-tenue">
-            {conDatos.length} de {ASTRONAUTAS.length} relojes transmitiendo, {alertas.length}{" "}
-            {alertas.length === 1 ? "alerta" : "alertas"}
-          </p>
+          <button
+            type="button"
+            onClick={restablecer}
+            disabled={!hayEscenarioActivo}
+            className="min-h-10 rounded-[3px] border border-borde px-3 text-sm hover:border-texto focus-visible:outline-2 focus-visible:outline-acento disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Restablecer escenarios
+          </button>
         </div>
         {criticas.length > 0 && (
-          <ul className="mt-3 space-y-1 text-sm">
+          <ul className="space-y-1 text-sm">
             {criticas.map((a) => (
               <li key={a.id} className="text-rojo">
                 ▲ <span className="font-medium">{a.nombre}:</span> {a.mensaje}. Avisar a la médica de a bordo.
@@ -270,7 +277,7 @@ export default function Panel() {
         )}
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4" aria-label="Astronautas">
+      <section className="grid gap-x-8 gap-y-14 md:grid-cols-2 xl:grid-cols-4" aria-label="Tripulación">
         {estados.map((e) => (
           <TarjetaAstronauta
             key={e.astronauta.id}
@@ -299,7 +306,7 @@ export default function Panel() {
         );
       })()}
 
-      <footer className="text-xs text-tenue">
+      <footer className="border-t border-borde pt-4 text-xs text-tenue">
         Prototipo de hackathon con datos simulados. Los umbrales son ilustrativos y no sustituyen criterio médico.
       </footer>
     </main>
