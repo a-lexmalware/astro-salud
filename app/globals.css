@@ -56,6 +56,23 @@ body {
 }
 .gota-onda { animation: onda 1.6s linear infinite; }
 
+/* Termómetro: la columna sigue a la temperatura; con alerta, el depósito late. */
+.termometro-columna { transition: y 600ms var(--curva-salida), height 600ms var(--curva-salida); }
+@keyframes calor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.termometro-alerta { animation: calor 1.4s ease-in-out infinite; }
+
+/* Luna del sueño: dos "z" suben y se desvanecen, una tras otra. */
+@keyframes zeta {
+  0% { opacity: 0; transform: translate(0, 2px); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translate(1px, -3px); }
+}
+.zeta { animation: zeta 2.4s ease-out infinite; }
+.zeta-2 { animation-delay: 1.2s; }
+
 /* Anillo del índice y barra de la meta: siguen al dato cuando cambia. */
 .anillo-progreso { transition: stroke-dashoffset 600ms var(--curva-salida), stroke 300ms; }
 .barra-meta { transition: width 600ms var(--curva-salida); }
@@ -115,10 +132,14 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .pulso { animation: none; }
   .latido,
-  .gota-onda { animation: none; }
+  .gota-onda,
+  .termometro-alerta { animation: none; }
+  /* Las "z" quedan visibles y quietas. */
+  .zeta { animation: none; opacity: 1; }
   .gota-nivel,
   .anillo-progreso,
-  .barra-meta { transition: none; }
+  .barra-meta,
+  .termometro-columna { transition: none; }
   /* Sin desplazamiento: la ficha solo aparece con un fundido corto. */
   .ficha,
   .ficha[open] {

@@ -3,7 +3,9 @@ import { ESCENARIOS, type Astronauta, type Escenario, type Lectura, type Nivel }
 import Corazon from "./Corazon";
 import FotoAstronauta from "./FotoAstronauta";
 import GotaOxigeno from "./GotaOxigeno";
+import LunaSueno from "./LunaSueno";
 import Sparkline from "./Sparkline";
+import Termometro from "./Termometro";
 
 export const COLOR: Record<Nivel, string> = {
   verde: "var(--color-verde)",
@@ -115,9 +117,17 @@ export default function TarjetaAstronauta({
         {METRICAS.filter((m) => m.id !== "fc" && m.id !== "spo2").map((m) => {
           const n = evaluacion?.porMetrica[m.id] ?? "verde";
           const valor = ultima ? ultima[m.id] : null;
+          const colorIcono = sinSenal ? TENUE : n === "verde" ? "var(--color-tenue)" : COLOR[n];
+          const vivo = valor !== null && !sinSenal ? valor : null;
           return (
             <div key={m.id} className="min-w-0">
-              <dt className="truncate text-xs text-tenue">{m.etiqueta}</dt>
+              <dt className="flex items-center gap-1.5 text-xs text-tenue">
+                {m.id === "temp" && (
+                  <Termometro temp={vivo} color={colorIcono} alerta={!sinSenal && n !== "verde"} className="size-4" />
+                )}
+                {m.id === "sueno" && <LunaSueno horas={vivo} color={colorIcono} className="size-4" />}
+                <span className="truncate">{m.etiqueta}</span>
+              </dt>
               <dd
                 className="mt-0.5 font-mono text-base tabular-nums"
                 style={{ color: sinSenal ? TENUE : n === "verde" ? undefined : COLOR[n] }}
