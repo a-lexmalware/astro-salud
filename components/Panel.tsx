@@ -5,13 +5,16 @@ import * as almacen from "@/lib/almacen";
 import { cambiarApagon, enlaceInicial, registrar, restaurarEnlace, type EstadoEnlace } from "@/lib/enlace";
 import { esperaHastaSiguiente, planificar, type EstadoIncidente, type Incidente } from "@/lib/incidentes";
 import { LineaBase, type Desviacion } from "@/lib/lineaBase";
+import { protocolosPara } from "@/lib/protocolos";
 import { evaluar, METRICAS, peorNivel } from "@/lib/salud";
 import { Simulador } from "@/lib/simulador";
 import { supabase } from "@/lib/supabase";
+import type { Accion, ContextoVega } from "@/lib/vega";
 import { ASTRONAUTAS, type Escenario, type Lectura, type Nivel } from "@/lib/tipos";
 import BarraEnlace from "./BarraEnlace";
 import FichaAstronauta from "./FichaAstronauta";
 import MedirPulso from "./MedirPulso";
+import Vega from "./Vega";
 import TarjetaAstronauta, { COLOR, ETIQUETA } from "./TarjetaAstronauta";
 
 const MAX_PUNTOS = 60; // lecturas guardadas por astronauta para las gráficas
@@ -364,8 +367,9 @@ export default function Panel() {
   }, [conPulsoReal]);
 
   const apagonEfectivo = enlace.apagon || sinInternet;
-  const alternarApagon = () => {
-    const { estado, enviadosAhora } = cambiarApagon(enlace, !enlace.apagon, Date.now());
+  const alternarApagon = () => fijarApagon(!enlace.apagon);
+  const fijarApagon = (activar: boolean) => {
+    const { estado, enviadosAhora } = cambiarApagon(enlace, activar, Date.now());
     setEnlace(estado);
     if (!estado.apagon && !sinInternet) {
       setAviso(
@@ -410,6 +414,32 @@ export default function Panel() {
   const nivelTripulacion: Nivel = peorNivel(conDatos.map(nivelDe));
   const tendencias = conDatos.filter((e) => e.evaluacion!.nivel !== "rojo" && desvDe(e.astronauta.id).length > 0);
   const etiquetaMetrica = (id: string) => METRICAS.find((m) => m.id === id)?.etiqueta.toLowerCase() ?? id;
+
+  // Lo que VEGA sabe: exactamente lo que muestra el panel, nada más.
+  const ctxVega: ContextoVega = {
+    tripulantes: estados.map((e) => {
+      const desv = desvDe(e.astronauta.id);
+      const vigilar = !!e.evaluacion && e.evaluacion.nivel === "verde" && desv.length > 0;
+      return {
+        id: e.astronauta.id,
+        nombre: e.astronauta.nombre,
+        indicativo: e.astronauta.indicativo,
+        nivel: e.evaluacion ? (vigilar ? "amarillo" : e.evaluacion.nivel) : "verde",
+        vigilar,
+        sinSenal: e.sinSenal,
+        lectura: e.ultima ?? null,
+        evaluacion: e.evaluacion,
+        desviaciones: desv,
+        protocolos: protocolosPara(e.evaluacion, desv),
+      };
+    }),
+    apagon: apagonEfectivo,
+    enCola: enlace.cola.length,
+  };
+  const accionVega = (a: Accion) => {
+    if (a.tipo === "medir") setCamara(a.id);
+    else if (a.tipo === "apagon") fijarApagon(a.activar);
+  };
   const alertas = conDatos.flatMap((e) =>
     e.evaluacion!.alertas.map((a) => ({ ...a, nombre: e.astronauta.nombre, id: `${e.astronauta.id}-${a.metrica}` })),
   );
@@ -480,6 +510,8 @@ export default function Panel() {
           </p>
         </div>
       </header>
+
+      <Vega ctx={ctxVega} onAccion={accionVega} />
 
       <BarraEnlace
         enlace={enlace}
