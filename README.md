@@ -3,6 +3,8 @@
 Monitoreo en tiempo real de la salud de astronautas mediante smartwatch.
 Next.js + Tailwind para el panel, Supabase Realtime para los datos en vivo y un simulador de relojes.
 
+Demo publicada: https://astro-salud.vercel.app (modo demo; cada subida a `main` se despliega sola en Vercel).
+
 ## Arrancar en 1 minuto (modo demo, sin Supabase)
 
 ```bash
