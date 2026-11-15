@@ -29,6 +29,8 @@ interface Props {
   segundosDesde: number | null;
   onEscenario: (e: Escenario) => void;
   onAbrirFicha: () => void;
+  /** Incidente simulado que afecta a este tripulante, si hay uno en curso. */
+  incidente: string | null;
 }
 
 /**
@@ -43,6 +45,7 @@ export default function TarjetaAstronauta({
   segundosDesde,
   onEscenario,
   onAbrirFicha,
+  incidente,
 }: Props) {
   const ultima = historial.at(-1);
   const evaluacion = ultima ? evaluar(ultima) : null;
@@ -155,6 +158,12 @@ export default function TarjetaAstronauta({
           );
         })}
       </dl>
+
+      {incidente && (
+        <p className="mt-4 border-l-2 border-amarillo pl-3 text-sm">
+          <span className="text-tenue">Simulando:</span> {incidente.toLowerCase()}
+        </p>
+      )}
 
       <ul className="mt-4 min-h-5 space-y-1 text-sm">
         {sinSenal ? (

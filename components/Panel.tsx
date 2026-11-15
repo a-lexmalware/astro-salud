@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { esperaHastaSiguiente, planificar, type EstadoIncidente, type Incidente } from "@/lib/incidentes";
 import { evaluar, METRICAS, peorNivel } from "@/lib/salud";
 import { Simulador } from "@/lib/simulador";
 import { supabase } from "@/lib/supabase";
@@ -12,6 +13,8 @@ const MAX_PUNTOS = 60; // lecturas guardadas por astronauta para las gráficas
 const INTERVALO_MS = 2000;
 const SEGUNDOS_SIN_SENAL = 10;
 // La misión empezó con la llegada de la comandante: su contador marca el día.
+const MAX_BITACORA = 6; // incidentes que se muestran en la bitácora
+const horaUTC = (ms: number) => new Date(ms).toISOString().slice(11, 19);
 const DIA_DE_MISION = Math.max(...ASTRONAUTAS.map((a) => a.diasEnMision));
 
 type Historial = Record<string, Lectura[]>;
@@ -67,6 +70,11 @@ export default function Panel() {
   const [error, setError] = useState<string | null>(null);
   // El id se conserva al cerrar para que la ficha mantenga su contenido mientras sale.
   const [ficha, setFicha] = useState<{ id: string; abierta: boolean } | null>(null);
+  // Incidentes simulados automáticamente cada cierto tiempo (activos por defecto).
+  const [autoIncidentes, setAutoIncidentes] = useState(true);
+  const [bitacora, setBitacora] = useState<Incidente[]>([]);
+  const idIncidente = useRef(0);
+  const ultimoIncidente = useRef<Incidente | null>(null);
   const sim = useRef<Simulador | null>(null);
 
   // Reloj: también sirve para detectar relojes que dejaron de transmitir.
@@ -168,7 +176,58 @@ export default function Panel() {
     }
   }, [escenarios]);
 
-  const restablecer = () => ASTRONAUTAS.forEach((a) => cambiarEscenario(a.id, "normal"));
+  // Los temporizadores de incidentes usan siempre la versión más reciente de cambiarEscenario.
+  const cambiarRef = useRef(cambiarEscenario);
+  useEffect(() => {
+    cambiarRef.current = cambiarEscenario;
+  }, [cambiarEscenario]);
+
+  const enCurso = bitacora.find((i) => i.estado === "en-curso") ?? null;
+
+  const iniciarIncidente = useCallback(() => {
+    idIncidente.current += 1;
+    const ids = ASTRONAUTAS.map((a) => a.id);
+    const inc = planificar(Math.random, Date.now(), ids, idIncidente.current, ultimoIncidente.current ?? undefined);
+    ultimoIncidente.current = inc;
+    setBitacora((b) => [inc, ...b].slice(0, MAX_BITACORA));
+    cambiarRef.current(inc.astronautaId, inc.tipo.escenario);
+  }, []);
+
+  const terminarIncidente = useCallback(
+    (inc: Incidente, estado: Exclude<EstadoIncidente, "en-curso">, volverANormal = true) => {
+      const ahora = Date.now();
+      setBitacora((b) => b.map((i) => (i.id === inc.id ? { ...i, estado, fin: ahora } : i)));
+      if (volverANormal) cambiarRef.current(inc.astronautaId, "normal");
+    },
+    [],
+  );
+
+  // Programa el siguiente incidente o el final del que está en curso.
+  useEffect(() => {
+    if (!autoIncidentes) return;
+    if (enCurso) {
+      const t = setTimeout(() => terminarIncidente(enCurso, "resuelto"), Math.max(0, enCurso.fin - Date.now()));
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(iniciarIncidente, esperaHastaSiguiente(Math.random, bitacora.length === 0));
+    return () => clearTimeout(t);
+  }, [autoIncidentes, enCurso, bitacora.length, iniciarIncidente, terminarIncidente]);
+
+  const alternarIncidentes = () => {
+    if (autoIncidentes && enCurso) terminarIncidente(enCurso, "detenido");
+    setAutoIncidentes((a) => !a);
+  };
+
+  // Un cambio manual en el astronauta afectado detiene el incidente simulado.
+  const elegirEscenario = (id: string, escenario: Escenario) => {
+    if (enCurso?.astronautaId === id) terminarIncidente(enCurso, "detenido", false);
+    cambiarEscenario(id, escenario);
+  };
+
+  const restablecer = () => {
+    if (enCurso) terminarIncidente(enCurso, "detenido", false);
+    ASTRONAUTAS.forEach((a) => cambiarEscenario(a.id, "normal"));
+  };
 
 
   // Estado de cada astronauta a partir de su última lectura.
@@ -257,15 +316,35 @@ export default function Panel() {
               </span>
             </span>
           </p>
-          <button
-            type="button"
-            onClick={restablecer}
-            disabled={!hayEscenarioActivo}
-            className="min-h-10 rounded-[3px] border border-borde px-3 text-sm hover:border-texto focus-visible:outline-2 focus-visible:outline-acento disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Restablecer escenarios
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={alternarIncidentes}
+              aria-pressed={!autoIncidentes}
+              className="min-h-10 rounded-[3px] border border-borde px-3 text-sm hover:border-texto focus-visible:outline-2 focus-visible:outline-acento"
+            >
+              {autoIncidentes ? "Pausar incidentes" : "Reanudar incidentes"}
+            </button>
+            <button
+              type="button"
+              onClick={restablecer}
+              disabled={!hayEscenarioActivo}
+              className="min-h-10 rounded-[3px] border border-borde px-3 text-sm hover:border-texto focus-visible:outline-2 focus-visible:outline-acento disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Restablecer escenarios
+            </button>
+          </div>
         </div>
+        {enCurso && (
+          <p className="text-sm">
+            <span className="font-semibold">Simulando: {enCurso.tipo.titulo.toLowerCase()}</span>{" "}
+            <span className="text-tenue">
+              ({ASTRONAUTAS.find((a) => a.id === enCurso.astronautaId)?.nombre}). En sus signos vitales{" "}
+              {enCurso.tipo.efecto}. Se resuelve
+              {ahora !== null ? ` en ${Math.max(0, Math.ceil((enCurso.fin - ahora) / 1000))} s.` : " solo."}
+            </span>
+          </p>
+        )}
         {criticas.length > 0 && (
           <ul className="space-y-1 text-sm">
             {criticas.map((a) => (
@@ -286,7 +365,8 @@ export default function Panel() {
             escenario={escenarios[e.astronauta.id]}
             sinSenal={e.sinSenal}
             segundosDesde={e.segundosDesde}
-            onEscenario={(esc) => cambiarEscenario(e.astronauta.id, esc)}
+            onEscenario={(esc) => elegirEscenario(e.astronauta.id, esc)}
+            incidente={enCurso?.astronautaId === e.astronauta.id ? enCurso.tipo.titulo : null}
             onAbrirFicha={() => setFicha({ id: e.astronauta.id, abierta: true })}
           />
         ))}
@@ -305,6 +385,46 @@ export default function Panel() {
           />
         );
       })()}
+
+      <section aria-labelledby="bitacora-titulo" className="border-t border-borde pt-5">
+        <h2 id="bitacora-titulo" className="ancho-expandido text-lg font-semibold">
+          Bitácora de incidentes
+        </h2>
+        <p className="mt-1 text-sm text-tenue">
+          {autoIncidentes
+            ? "Cada minuto, más o menos, se simula un problema real de salud en un tripulante."
+            : "Incidentes automáticos en pausa."}
+        </p>
+        {bitacora.length === 0 ? (
+          <p className="mt-4 text-sm text-tenue">
+            {autoIncidentes ? "El primer incidente llegará en unos segundos." : "Todavía no ha habido incidentes."}
+          </p>
+        ) : (
+          <ol className="mt-4 divide-y divide-borde text-sm" aria-live="polite">
+            {bitacora.map((i) => (
+              <li key={i.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 py-2.5 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
+                <span className="ancho-condensado text-base font-semibold tabular-nums text-tenue">
+                  {horaUTC(i.inicio)}
+                </span>
+                <span>
+                  {i.tipo.titulo}{" "}
+                  <span className="text-tenue">({ASTRONAUTAS.find((a) => a.id === i.astronautaId)?.nombre})</span>
+                </span>
+                <span
+                  className="col-start-2 text-tenue sm:col-start-auto"
+                  style={i.estado === "en-curso" ? { color: "var(--color-amarillo)" } : undefined}
+                >
+                  {i.estado === "en-curso"
+                    ? "En curso"
+                    : i.estado === "resuelto"
+                      ? `Resuelto a las ${horaUTC(i.fin)}`
+                      : `Detenido a las ${horaUTC(i.fin)}`}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
 
       <footer className="border-t border-borde pt-4 text-xs text-tenue">
         Prototipo de hackathon con datos simulados. Los umbrales son ilustrativos y no sustituyen criterio médico.
