@@ -4,13 +4,13 @@ import type { Evaluacion } from "./salud";
 import type { Lectura, Nivel } from "./tipos";
 
 /**
- * VEGA, la asistente de a bordo. Su "cerebro" son reglas: todo lo que dice
+ * VIERNES, la asistente de a bordo. Su "cerebro" son reglas: todo lo que dice
  * sale de los datos de la app (lecturas, alertas, línea base, protocolos),
  * nunca de algo inventado. Así, en un tema médico, no improvisa.
- * La voz y el micrófono son solo la capa de encima (components/Vega.tsx).
+ * La voz y el micrófono son solo la capa de encima (components/Viernes.tsx).
  */
 
-export interface TripulanteVega {
+export interface TripulanteViernes {
   id: string;
   nombre: string;
   indicativo: string;
@@ -23,8 +23,8 @@ export interface TripulanteVega {
   protocolos: Protocolo[];
 }
 
-export interface ContextoVega {
-  tripulantes: TripulanteVega[];
+export interface ContextoViernes {
+  tripulantes: TripulanteViernes[];
   apagon: boolean;
   enCola: number;
 }
@@ -69,7 +69,7 @@ const normalizar = (s: string) =>
 const primerNombre = (n: string) => n.split(" ")[0];
 
 /** Busca a qué tripulante se refiere el texto, por nombre, apellido o indicativo. */
-function buscarTripulante(texto: string, ctx: ContextoVega): string | null {
+function buscarTripulante(texto: string, ctx: ContextoViernes): string | null {
   const t = ` ${normalizar(texto)} `;
   for (const tr of ctx.tripulantes) {
     const claves = [...tr.nombre.split(" "), tr.indicativo].map(normalizar).filter((c) => c.length > 2);
@@ -79,7 +79,7 @@ function buscarTripulante(texto: string, ctx: ContextoVega): string | null {
 }
 
 /** De texto libre (voz o teclado) a una intención. */
-export function interpretar(texto: string, ctx: ContextoVega): Intencion {
+export function interpretar(texto: string, ctx: ContextoViernes): Intencion {
   const t = normalizar(texto);
   if (!t) return { tipo: "desconocida" };
   const id = buscarTripulante(texto, ctx);
@@ -99,7 +99,7 @@ export function interpretar(texto: string, ctx: ContextoVega): Intencion {
   return { tipo: "desconocida" };
 }
 
-function lineaEstado(tr: TripulanteVega): string {
+function lineaEstado(tr: TripulanteViernes): string {
   const n = primerNombre(tr.nombre);
   if (tr.sinSenal || !tr.lectura) return `No me llegan lecturas de ${n}. Revisa su reloj.`;
   const l = tr.lectura;
@@ -119,8 +119,8 @@ function lineaEstado(tr: TripulanteVega): string {
   return `${n} está estable: ${datos}.`;
 }
 
-/** Lo que VEGA contesta a una intención, con la acción que la app debe hacer. */
-export function responder(int: Intencion, ctx: ContextoVega, guia: Guia | null): Respuesta {
+/** Lo que VIERNES contesta a una intención, con la acción que la app debe hacer. */
+export function responder(int: Intencion, ctx: ContextoViernes, guia: Guia | null): Respuesta {
   const porId = (id: string | null) => ctx.tripulantes.find((t) => t.id === id) ?? null;
   // Sin nombre, "guíame" se refiere al tripulante que más lo necesita.
   const masUrgente = () =>
@@ -222,10 +222,10 @@ export interface Huella {
 export const huellaVacia = (): Huella => ({ porTripulante: {}, apagon: false });
 
 /**
- * Avisos que VEGA dice por su cuenta cuando algo empeora o se resuelve.
+ * Avisos que VIERNES dice por su cuenta cuando algo empeora o se resuelve.
  * La primera vez solo registra el estado, sin hablar.
  */
-export function avisos(prev: Huella | null, ctx: ContextoVega): { textos: string[]; huella: Huella } {
+export function avisos(prev: Huella | null, ctx: ContextoViernes): { textos: string[]; huella: Huella } {
   const huella: Huella = { porTripulante: {}, apagon: ctx.apagon };
   const textos: string[] = [];
 

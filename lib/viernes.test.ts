@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { protocolosPara } from "./protocolos";
 import { evaluar } from "./salud";
 import type { Lectura } from "./tipos";
-import { avisos, interpretar, responder, type ContextoVega, type TripulanteVega } from "./vega";
+import { avisos, interpretar, responder, type ContextoViernes, type TripulanteViernes } from "./viernes";
 
 const lectura = (id: string, c: Partial<Lectura> = {}): Lectura => ({
   astronauta_id: id,
@@ -17,7 +17,7 @@ const lectura = (id: string, c: Partial<Lectura> = {}): Lectura => ({
   ...c,
 });
 
-function tripulante(id: string, nombre: string, indicativo: string, c: Partial<Lectura> = {}): TripulanteVega {
+function tripulante(id: string, nombre: string, indicativo: string, c: Partial<Lectura> = {}): TripulanteViernes {
   const l = lectura(id, c);
   const e = evaluar(l);
   return {
@@ -34,7 +34,7 @@ function tripulante(id: string, nombre: string, indicativo: string, c: Partial<L
   };
 }
 
-const ctx = (cambios: Partial<Record<string, Partial<Lectura>>> = {}, apagon = false): ContextoVega => ({
+const ctx = (cambios: Partial<Record<string, Partial<Lectura>>> = {}, apagon = false): ContextoViernes => ({
   tripulantes: [
     tripulante("ast-1", "Valeria Ríos", "Cóndor", cambios["ast-1"]),
     tripulante("ast-2", "Mateo Salas", "Brújula", cambios["ast-2"]),

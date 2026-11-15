@@ -6,10 +6,10 @@ import {
   interpretar,
   responder,
   type Accion,
-  type ContextoVega,
+  type ContextoViernes,
   type Guia,
   type Huella,
-} from "@/lib/vega";
+} from "@/lib/viernes";
 
 /** Lo mínimo del reconocimiento de voz del navegador (no viene en los tipos de TypeScript). */
 interface Reconocimiento {
@@ -41,19 +41,19 @@ function vozEnEspanol(): SpeechSynthesisVoice | null {
 }
 
 interface Props {
-  ctx: ContextoVega;
+  ctx: ContextoViernes;
   onAccion: (a: Accion) => void;
 }
 
 type Modo = "reposo" | "hablando" | "escuchando";
 
 /**
- * VEGA, la asistente de a bordo. Habla con la voz del navegador (funciona sin
+ * VIERNES, la asistente de a bordo. Habla con la voz del navegador (funciona sin
  * internet en la mayoría de los equipos) y escucha con el reconocimiento de
- * Chrome si está disponible; si no, se le escribe. Lo que dice sale de lib/vega.ts.
+ * Chrome si está disponible; si no, se le escribe. Lo que dice sale de lib/viernes.ts.
  */
-export default function Vega({ ctx, onAccion }: Props) {
-  const [frase, setFrase] = useState("VEGA en espera. Pregúntame cómo está la tripulación.");
+export default function Viernes({ ctx, onAccion }: Props) {
+  const [frase, setFrase] = useState("Viernes en espera. Pregúntame cómo está la tripulación.");
   const [vozActiva, setVozActiva] = useState(false);
   const [modo, setModo] = useState<Modo>("reposo");
   const [guia, setGuia] = useState<Guia | null>(null);
@@ -138,7 +138,7 @@ export default function Vega({ ctx, onAccion }: Props) {
     const activar = !vozActiva;
     setVozActiva(activar);
     vozRef.current = activar;
-    if (activar) decir("VEGA en línea. Estoy monitoreando a la tripulación a bordo.", true);
+    if (activar) decir("Viernes en línea. Estoy monitoreando a la tripulación a bordo.", true);
     else {
       window.speechSynthesis?.cancel();
       setModo("reposo");
@@ -195,18 +195,18 @@ export default function Vega({ ctx, onAccion }: Props) {
 
   return (
     <section
-      aria-label="VEGA, asistente de a bordo"
-      className="vega -mt-4 flex flex-col gap-3 rounded-[3px] border border-[#6FE3FF]/35 px-4 py-3"
+      aria-label="VIERNES, asistente de a bordo"
+      className="viernes -mt-4 flex flex-col gap-3 rounded-[3px] border border-[#6FE3FF]/35 px-4 py-3"
     >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-        <span className={`orbe-vega relative grid size-10 shrink-0 place-items-center ${modo}`} aria-hidden>
-          <span className="eco-vega absolute inset-0 rounded-full border border-[#6FE3FF]" />
-          <span className="eco-vega eco-2 absolute inset-0 rounded-full border border-[#6FE3FF]" />
-          <span className="nucleo-vega block size-7 rounded-full" />
+        <span className={`orbe-viernes relative grid size-10 shrink-0 place-items-center ${modo}`} aria-hidden>
+          <span className="eco-viernes absolute inset-0 rounded-full border border-[#6FE3FF]" />
+          <span className="eco-viernes eco-2 absolute inset-0 rounded-full border border-[#6FE3FF]" />
+          <span className="nucleo-viernes block size-7 rounded-full" />
         </span>
         <div className="min-w-0 flex-[999_1_320px]">
           <p className="text-xs tracking-[0.24em] text-[#6FE3FF]">
-            VEGA
+            VIERNES
             <span className="ml-2 tracking-normal text-tenue">
               {modo === "escuchando" ? "· te escucho…" : modo === "hablando" ? "· hablando" : "· a bordo, sin nube"}
             </span>
@@ -258,14 +258,14 @@ export default function Vega({ ctx, onAccion }: Props) {
           </button>
         ))}
         <form onSubmit={enviar} className="flex min-w-[240px] flex-1 items-center gap-2">
-          <label htmlFor="vega-texto" className="sr-only">
-            Escríbele a VEGA
+          <label htmlFor="viernes-texto" className="sr-only">
+            Escríbele a VIERNES
           </label>
           <input
-            id="vega-texto"
+            id="viernes-texto"
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
-            placeholder="Escríbele a VEGA: «¿cómo está Lucas?»"
+            placeholder="Escríbele a VIERNES: «¿cómo está Lucas?»"
             className="min-h-9 min-w-0 flex-1 rounded-[3px] border border-borde bg-transparent px-3 text-sm placeholder:text-tenue focus-visible:outline-2 focus-visible:outline-acento"
           />
           <button

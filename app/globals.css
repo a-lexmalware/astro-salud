@@ -203,34 +203,34 @@ body {
   .sensor { animation: none; }
 }
 
-/* VEGA: el orbe respira en reposo, late al hablar y lanza ondas al escuchar. */
-.vega { background: linear-gradient(90deg, rgb(111 227 255 / 0.06), transparent 60%); }
-.nucleo-vega {
+/* VIERNES: el orbe respira en reposo, late al hablar y lanza ondas al escuchar. */
+.viernes { background: linear-gradient(90deg, rgb(111 227 255 / 0.06), transparent 60%); }
+.nucleo-viernes {
   background: radial-gradient(circle at 35% 30%, #ffffff, #6fe3ff 45%, #1c6e8c 100%);
   box-shadow: 0 0 16px rgb(111 227 255 / 0.7), 0 0 36px rgb(111 227 255 / 0.3);
-  animation: vega-respira 3.2s ease-in-out infinite;
+  animation: viernes-respira 3.2s ease-in-out infinite;
 }
-.eco-vega { opacity: 0; }
-@keyframes vega-respira {
+.eco-viernes { opacity: 0; }
+@keyframes viernes-respira {
   0%, 100% { transform: scale(0.92); }
   50% { transform: scale(1); }
 }
-@keyframes vega-habla {
+@keyframes viernes-habla {
   0%, 100% { transform: scale(0.9); }
   30% { transform: scale(1.12); }
   60% { transform: scale(0.98); }
 }
-@keyframes vega-eco {
+@keyframes viernes-eco {
   0% { transform: scale(0.8); opacity: 0.7; }
   100% { transform: scale(2.1); opacity: 0; }
 }
-.orbe-vega.hablando .nucleo-vega { animation: vega-habla 0.6s ease-in-out infinite; }
-.orbe-vega.hablando .eco-vega,
-.orbe-vega.escuchando .eco-vega { animation: vega-eco 1.6s ease-out infinite; }
-.orbe-vega .eco-2 { animation-delay: 0.8s !important; }
-.orbe-vega.escuchando .nucleo-vega { animation: vega-respira 0.8s ease-in-out infinite; }
+.orbe-viernes.hablando .nucleo-viernes { animation: viernes-habla 0.6s ease-in-out infinite; }
+.orbe-viernes.hablando .eco-viernes,
+.orbe-viernes.escuchando .eco-viernes { animation: viernes-eco 1.6s ease-out infinite; }
+.orbe-viernes .eco-2 { animation-delay: 0.8s !important; }
+.orbe-viernes.escuchando .nucleo-viernes { animation: viernes-respira 0.8s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .nucleo-vega,
-  .orbe-vega .eco-vega { animation: none !important; }
+  .nucleo-viernes,
+  .orbe-viernes .eco-viernes { animation: none !important; }
 }

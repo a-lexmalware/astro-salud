@@ -26,7 +26,7 @@ Usa "Simular escenario" en cada tarjeta para provocar una emergencia durante la 
    frente a la webcam*. En unos 8 segundos sale el pulso y la tarjeta muestra "Cámara en vivo".
 3. **Apagón de comunicaciones.** Pulsa *Simular apagón*: la barra se pone roja, la detección sigue
    igual y los resúmenes para la Tierra se quedan en cola. *Restablecer enlace* los envía todos.
-4. **VEGA, la asistente de a bordo.** Pulsa *Activar voz*. Cuando algo cambia, VEGA lo dice sola
+4. **VIERNES, la asistente de a bordo.** Pulsa *Activar voz*. Cuando algo cambia, VIERNES lo dice sola
    ("Atención. Mateo: oxígeno en sangre bajo"). Pídele *Guíame* y te lleva por el protocolo paso a
    paso con *Siguiente paso*. También entiende texto o voz: "¿cómo está Lucas?", "mide el pulso de
    Valeria", "simula un apagón".
@@ -41,7 +41,7 @@ Usa "Simular escenario" en cada tarjeta para provocar una emergencia durante la 
 | Pulso por cámara | Fotopletismografía: canal rojo (dedo) o verde de la frente (cara), filtro pasa banda 0.7–3.5 Hz, periodo por autocorrelación y un latido por periodo. Solo se usa la FC; la HRV de unos segundos es demasiado inestable. | `lib/pulsoCamara.ts`, `components/MedirPulso.tsx` |
 | Enlace con la Tierra | Cada 15 s arma un resumen. Con enlace se envía; en apagón (simulado o sin internet real) se encola y sale al volver. | `lib/enlace.ts`, `components/BarraEnlace.tsx` |
 | Memoria del dispositivo | Guarda en IndexedDB la línea base, el historial reciente y la cola cada 5 s. Al abrir recupera lo de las últimas 12 h. | `lib/almacen.ts` |
-| VEGA | Asistente por reglas: todo lo que dice sale de las lecturas, la línea base y los protocolos, nunca inventa. Habla con la voz del navegador (sin red en la mayoría de los equipos); escucha con el reconocimiento de Chrome (ese sí usa internet) o por texto. | `lib/vega.ts`, `lib/protocolos.ts`, `components/Vega.tsx` |
+| VIERNES | Asistente por reglas: todo lo que dice sale de las lecturas, la línea base y los protocolos, nunca inventa. Habla con la voz del navegador (sin red en la mayoría de los equipos); escucha con el reconocimiento de Chrome (ese sí usa internet) o por texto. | `lib/viernes.ts`, `lib/protocolos.ts`, `components/Viernes.tsx` |
 | App instalable sin red | Service worker que guarda la página y sus archivos; manifest para instalarla en el celular. Solo se activa en producción (`npm run build && npm start` o Vercel). | `public/sw.js`, `app/manifest.ts`, `components/RegistroSW.tsx` |
 
 La cámara necesita https (Vercel) o `localhost`.
