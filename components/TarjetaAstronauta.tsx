@@ -1,5 +1,6 @@
 import { evaluar, METRICAS, META_EJERCICIO } from "@/lib/salud";
 import { ESCENARIOS, type Astronauta, type Escenario, type Lectura, type Nivel } from "@/lib/tipos";
+import FotoAstronauta from "./FotoAstronauta";
 import Sparkline from "./Sparkline";
 
 export const COLOR: Record<Nivel, string> = {
@@ -21,10 +22,8 @@ interface Props {
   sinSenal: boolean;
   segundosDesde: number | null;
   onEscenario: (e: Escenario) => void;
-  reloj: string | null; // nombre del reloj real conectado a este astronauta
-  conectando: boolean;
-  relojOcupado: boolean; // hay otra conexión en curso: solo se admite un reloj
-  onReloj: () => void;
+  pulsoTelefono: boolean; // llega pulso real desde el teléfono (Gadgetbridge)
+  onAbrirFicha: () => void;
 }
 
 export default function TarjetaAstronauta({
@@ -34,10 +33,8 @@ export default function TarjetaAstronauta({
   sinSenal,
   segundosDesde,
   onEscenario,
-  reloj,
-  conectando,
-  relojOcupado,
-  onReloj,
+  pulsoTelefono,
+  onAbrirFicha,
 }: Props) {
   const ultima = historial.at(-1);
   const evaluacion = ultima ? evaluar(ultima) : null;
@@ -51,10 +48,22 @@ export default function TarjetaAstronauta({
       style={{ borderColor: evaluacion && !sinSenal && nivel !== "verde" ? color : "var(--color-borde)" }}
     >
       <header className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h2 className="truncate text-lg font-semibold">{astronauta.nombre}</h2>
-          <p className="text-sm text-tenue">{astronauta.rol}</p>
-        </div>
+        {/* El encabezado envuelve al botón: un <h2> no puede ir dentro de un <button>. */}
+        <h2 className="min-w-0">
+          <button
+            type="button"
+            onClick={onAbrirFicha}
+            aria-haspopup="dialog"
+            className="group -m-1.5 flex w-full min-w-0 items-center gap-3 rounded-lg p-1.5 text-left hover:bg-panel-2 focus-visible:outline-2 focus-visible:outline-acento"
+          >
+            <FotoAstronauta astronauta={astronauta} tamano="mini" />
+            <span className="min-w-0">
+              <span className="font-rotulo block text-xl font-semibold leading-tight">{astronauta.nombre}</span>
+              <span className="block text-sm font-normal leading-snug text-tenue">{astronauta.rol}</span>
+              <span className="text-xs font-normal text-acento group-hover:underline">Ver ficha</span>
+            </span>
+          </button>
+        </h2>
         <div className="shrink-0 text-right">
           <div className="flex items-center justify-end gap-2 text-sm font-medium" style={{ color }}>
             <span
@@ -126,24 +135,14 @@ export default function TarjetaAstronauta({
         )}
       </ul>
 
-      <div className="mt-auto flex flex-col gap-2 border-t border-borde pt-3">
-        <button
-          type="button"
-          onClick={onReloj}
-          disabled={conectando || (relojOcupado && !reloj)}
-          className="rounded-md border border-borde bg-panel-2 px-3 py-1.5 text-sm font-medium hover:border-acento focus-visible:outline-2 focus-visible:outline-acento disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {conectando ? "Conectando reloj…" : reloj ? "Desconectar reloj" : "Conectar reloj"}
-        </button>
-        {reloj && (
-          <p className="text-xs text-tenue">
-            <span className="text-acento">{reloj}</span>: frecuencia cardiaca real por Bluetooth (y HRV si el reloj
-            envía intervalos RR). Las demás métricas son simuladas.
-          </p>
-        )}
-      </div>
+      {pulsoTelefono && (
+        <p className="text-xs text-tenue">
+          <span className="text-acento">Reloj vía teléfono</span>: frecuencia cardiaca real enviada por Gadgetbridge.
+          Las demás métricas son simuladas.
+        </p>
+      )}
 
-      <footer className="flex items-center justify-between gap-3">
+      <footer className="mt-auto flex items-center justify-between gap-3 border-t border-borde pt-3">
         <label htmlFor={idSelect} className="text-xs text-tenue">
           Simular escenario
         </label>
@@ -151,10 +150,8 @@ export default function TarjetaAstronauta({
           id={idSelect}
           value={escenario}
           onChange={(e) => onEscenario(e.target.value as Escenario)}
-          disabled={reloj !== null}
           className="rounded-md border border-borde bg-panel-2 px-2 py-1.5 text-sm text-texto focus-visible:outline-2 focus-visible:outline-acento disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {escenario === "reloj" && <option value="reloj">Reloj real</option>}
           {ESCENARIOS.map((e) => (
             <option key={e.id} value={e.id}>
               {e.etiqueta}

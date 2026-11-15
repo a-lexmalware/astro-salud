@@ -5,8 +5,9 @@
  *   npm run simulador
  */
 import { createClient } from "@supabase/supabase-js";
+import { PulsoReal } from "../lib/pulso";
 import { Simulador } from "../lib/simulador";
-import type { Escenario } from "../lib/tipos";
+import { ASTRONAUTAS, type Escenario } from "../lib/tipos";
 
 // Se carga aquí (y no con --env-file) para poder dar un mensaje claro si falta el archivo.
 try {
@@ -25,6 +26,18 @@ if (!url || !clave) {
 
 const supabase = createClient(url, clave, { auth: { persistSession: false } });
 const sim = new Simulador();
+const pulso = new PulsoReal();
+
+// Pulso real que envía el teléfono con Gadgetbridge parcheado (tabla pulso_reloj).
+supabase
+  .channel("pulso-reloj")
+  .on("postgres_changes", { event: "INSERT", schema: "public", table: "pulso_reloj" }, (p) => {
+    const f = p.new as { astronauta_id: string; fc: number };
+    pulso.registrar(f.astronauta_id, Number(f.fc), Date.now());
+  })
+  .subscribe((estado) => {
+    if (estado === "CHANNEL_ERROR") console.error("No se pudo escuchar la tabla pulso_reloj (¿ejecutaste esquema.sql?)");
+  });
 const INTERVALO_MS = 2000;
 
 async function paso() {
@@ -32,9 +45,14 @@ async function paso() {
   if (errorEsc) console.error("No se pudieron leer los escenarios:", errorEsc.message);
   escenarios?.forEach((e) => sim.setEscenario(e.astronauta_id, e.escenario as Escenario));
 
-  // Los astronautas con reloj real ("reloj") los envía el panel que tiene el reloj conectado.
-  const lecturas = sim.tick().filter((l) => sim.escenarios.get(l.astronauta_id) !== "reloj");
-  if (lecturas.length === 0) return;
+  // Con pulso real reciente, la frecuencia cardiaca de ese astronauta es la del reloj.
+  const ahora = Date.now();
+  for (const a of ASTRONAUTAS) {
+    const fc = pulso.vigente(a.id, ahora);
+    sim.setReal(a.id, fc === null ? null : { fc, hrv: null });
+  }
+
+  const lecturas = sim.tick();
   const { error } = await supabase.from("lecturas").insert(lecturas);
   if (error) {
     console.error("Error al enviar lecturas:", error.message);
@@ -42,7 +60,9 @@ async function paso() {
   }
   console.log(
     new Date().toLocaleTimeString(),
-    lecturas.map((l) => `${l.astronauta_id} FC ${l.fc} SpO2 ${l.spo2}`).join(" | "),
+    lecturas
+      .map((l) => `${l.astronauta_id} FC ${l.fc}${sim.tieneReal(l.astronauta_id) ? " (reloj)" : ""} SpO2 ${l.spo2}`)
+      .join(" | "),
   );
 }
 

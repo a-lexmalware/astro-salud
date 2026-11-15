@@ -35,27 +35,24 @@ panel se guardan en la tabla `escenarios` y el simulador los obedece. Si detiene
 |---|---|
 | `lib/salud.ts` | Umbrales, alertas e índice de salud 0 a 100. Aquí se ajustan las reglas. |
 | `lib/simulador.ts` | Genera signos vitales y escenarios (hipoxia, taquicardia, fiebre, fatiga). |
-| `lib/tipos.ts` | Lista de astronautas y forma de una lectura. |
+| `lib/tipos.ts` | Tripulación (ficha personal y médica) y forma de una lectura. |
+| `components/FichaAstronauta.tsx` | Ficha lateral que se abre al tocar la cabecera de una tarjeta. |
 | `components/Panel.tsx` | Panel, conexión Realtime y modo demo. |
 | `components/TarjetaAstronauta.tsx` | Tarjeta por astronauta. |
-| `lib/reloj.ts` | Conexión Web Bluetooth y decodificación de la frecuencia cardiaca. |
+| `lib/pulso.ts` | Pulso real llegado desde el teléfono (Gadgetbridge). |
 | `scripts/simulador.ts` | Envía lecturas a Supabase. |
 | `supabase/esquema.sql` | Tablas, políticas y Realtime. |
 
-## Conectar un reloj real por Bluetooth
+## Fotos de la tripulación
 
-1. Abre el panel en Chrome o Edge (Safari y Firefox no tienen Web Bluetooth), en `localhost` o con https.
-2. En el reloj, activa la transmisión de frecuencia cardiaca a otros dispositivos. El nombre cambia
-   según la marca ("Transmitir FC", "Difusión de frecuencia cardiaca", "Compartir FC"). Las bandas de
-   pecho la emiten siempre.
-3. En la tarjeta del astronauta, pulsa "Conectar reloj" y elige el dispositivo.
+Los retratos de `public/astronautas/` están generados con IA (personas ficticias). Sin foto, un astronauta muestra sus iniciales. Para poner una, guarda la imagen en
+`public/astronautas/` (por ejemplo `ast-1.jpg`, mejor vertical 4:5) y añade
+`foto: "/astronautas/ast-1.jpg"` a ese astronauta en `lib/tipos.ts`.
 
-El panel usa el perfil estándar Heart Rate de Bluetooth: del reloj llegan la frecuencia cardiaca y, si
-envía intervalos RR, la HRV. Oxígeno, temperatura, sueño y ejercicio siguen siendo simulados, porque
-ese perfil no los incluye. Solo se admite un reloj a la vez. Un reloj que no ofrezca esa transmisión
-(por ejemplo un Apple Watch) no aparecerá en el selector.
+## Pulso real desde un reloj
 
-Con Supabase, el panel que tiene el reloj envía las lecturas de ese astronauta y el simulador lo omite.
+Para usar el pulso real de un reloj Xiaomi (como el Redmi Watch 5 Active) hay un camino con un
+teléfono Android y Gadgetbridge parcheado: ver [integraciones/gadgetbridge](integraciones/gadgetbridge/README.md).
 
 Para otras fuentes (una app de Wear OS, por ejemplo) basta con insertar filas en `lecturas` con las
 mismas columnas.
@@ -63,7 +60,7 @@ mismas columnas.
 ## Comprobaciones
 
 ```bash
-npm test             # pruebas de reglas de salud, simulador y lectura Bluetooth
+npm test             # pruebas de reglas de salud, simulador y pulso real
 npm run lint
 npm run typecheck
 ```

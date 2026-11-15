@@ -2,16 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { evaluar, METRICAS, peorNivel } from "@/lib/salud";
-import { bluetoothDisponible, conectarReloj, rmssd, type ConexionReloj } from "@/lib/reloj";
+import { SEGUNDOS_PULSO_VIGENTE } from "@/lib/pulso";
 import { Simulador } from "@/lib/simulador";
 import { supabase } from "@/lib/supabase";
 import { ASTRONAUTAS, type Escenario, type Lectura, type Nivel } from "@/lib/tipos";
+import FichaAstronauta from "./FichaAstronauta";
 import TarjetaAstronauta, { COLOR, ETIQUETA } from "./TarjetaAstronauta";
 
 const MAX_PUNTOS = 60; // lecturas guardadas por astronauta para las gráficas
 const INTERVALO_MS = 2000;
 const SEGUNDOS_SIN_SENAL = 10;
-const MAX_RR = 30; // intervalos RR recientes con los que se calcula la HRV del reloj real
 
 type Historial = Record<string, Lectura[]>;
 type Escenarios = Record<string, Escenario>;
@@ -62,13 +62,13 @@ export default function Panel() {
   // Hora local en que llegó la última lectura en vivo de cada astronauta. Evita
   // comparar el reloj del navegador con el de quien generó la lectura.
   const [recibido, setRecibido] = useState<Record<string, number>>({});
+  // Hora local de llegada del último pulso real enviado desde el teléfono (Gadgetbridge).
+  const [pulsoTelefono, setPulsoTelefono] = useState<Record<string, number>>({});
   const [ahora, setAhora] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // El id se conserva al cerrar para que la ficha mantenga su contenido mientras sale.
+  const [ficha, setFicha] = useState<{ id: string; abierta: boolean } | null>(null);
   const sim = useRef<Simulador | null>(null);
-  // Reloj real conectado por Bluetooth desde este panel (uno a la vez).
-  const conexion = useRef<ConexionReloj | null>(null);
-  const [reloj, setReloj] = useState<{ id: string; nombre: string } | null>(null);
-  const [conectando, setConectando] = useState<string | null>(null);
 
   // Reloj: también sirve para detectar relojes que dejaron de transmitir.
   useEffect(() => {
@@ -132,6 +132,12 @@ export default function Panel() {
         setRecibido((r) => ({ ...r, [lectura.astronauta_id]: llegada }));
         setHistorial((h) => agregar(h, [lectura]));
       })
+      // Pulso real del teléfono: lo aplica el script del simulador; aquí solo se señala.
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pulso_reloj" }, (p) => {
+        const id = String((p.new as { astronauta_id?: string }).astronauta_id);
+        const llegada = Date.now();
+        setPulsoTelefono((r) => ({ ...r, [id]: llegada }));
+      })
       // Escenarios cambiados desde otro panel abierto.
       .on("postgres_changes", { event: "*", schema: "public", table: "escenarios" }, (p) => {
         const f = p.new as { astronauta_id?: string; escenario?: Escenario };
@@ -152,24 +158,6 @@ export default function Panel() {
     };
   }, []);
 
-  // Al cerrar el panel se suelta el reloj.
-  useEffect(() => () => conexion.current?.desconectar(), []);
-
-  // Modo Supabase con reloj real: este panel envía las lecturas de ese astronauta
-  // (el script del simulador lo omite mientras su escenario sea "reloj").
-  useEffect(() => {
-    const s = sim.current;
-    if (!supabase || !reloj || !s) return;
-    const cliente = supabase;
-    const t = setInterval(async () => {
-      if (!s.tieneReal(reloj.id)) return; // todavía no llega la primera medición
-      const lecturas = s.tick().filter((l) => l.astronauta_id === reloj.id);
-      const { error } = await cliente.from("lecturas").insert(lecturas);
-      if (error) setError(`No se pudieron enviar las lecturas del reloj: ${error.message}`);
-    }, INTERVALO_MS);
-    return () => clearInterval(t);
-  }, [reloj]);
-
   const cambiarEscenario = useCallback(async (id: string, escenario: Escenario) => {
     const previo = escenarios[id];
     setEscenarios((e) => ({ ...e, [id]: escenario }));
@@ -187,50 +175,8 @@ export default function Panel() {
     }
   }, [escenarios]);
 
-  const restablecer = () =>
-    ASTRONAUTAS.filter((a) => a.id !== reloj?.id).forEach((a) => cambiarEscenario(a.id, "normal"));
+  const restablecer = () => ASTRONAUTAS.forEach((a) => cambiarEscenario(a.id, "normal"));
 
-  const conectar = async (id: string) => {
-    if (!bluetoothDisponible()) {
-      setError("Este navegador no admite Web Bluetooth. Abre el panel en Chrome o Edge.");
-      return;
-    }
-    setConectando(id);
-    sim.current ??= new Simulador();
-    const s = sim.current;
-    const rr: number[] = [];
-    try {
-      const c = await conectarReloj(
-        (m) => {
-          if (m.fc <= 0) return; // el reloj no detecta pulso (sin contacto con la piel)
-          rr.push(...m.rr);
-          rr.splice(0, Math.max(0, rr.length - MAX_RR));
-          s.setReal(id, { fc: m.fc, hrv: rmssd(rr) });
-        },
-        () => {
-          // Única salida, tanto si lo desconecta el usuario como si se pierde el enlace.
-          s.setReal(id, null);
-          conexion.current = null;
-          setReloj(null);
-          cambiarEscenario(id, "normal");
-        },
-      );
-      conexion.current = c;
-      setReloj({ id, nombre: c.nombre });
-      setError(null);
-      cambiarEscenario(id, "reloj");
-    } catch (e) {
-      // NotFoundError: el usuario cerró el selector sin elegir dispositivo.
-      if (!(e instanceof DOMException && e.name === "NotFoundError")) {
-        const detalle = e instanceof Error ? e.message : String(e);
-        setError(`No se pudo conectar el reloj: ${detalle}. Comprueba que esté transmitiendo la frecuencia cardiaca.`);
-      }
-    } finally {
-      setConectando(null);
-    }
-  };
-
-  const alternarReloj = (id: string) => (reloj?.id === id ? conexion.current?.desconectar() : conectar(id));
 
   // Estado de cada astronauta a partir de su última lectura.
   const estados = ASTRONAUTAS.map((a) => {
@@ -250,7 +196,7 @@ export default function Panel() {
     e.evaluacion!.alertas.map((a) => ({ ...a, nombre: e.astronauta.nombre, id: `${e.astronauta.id}-${a.metrica}` })),
   );
   const criticas = alertas.filter((a) => a.nivel === "rojo");
-  const hayEscenarioActivo = Object.entries(escenarios).some(([id, e]) => e !== "normal" && id !== reloj?.id);
+  const hayEscenarioActivo = Object.values(escenarios).some((e) => e !== "normal");
 
   // Texto para lectores de pantalla: no incluye los valores medidos, así solo
   // cambia (y se anuncia) cuando cambia el nivel o el conjunto de alertas críticas.
@@ -339,13 +285,28 @@ export default function Panel() {
             sinSenal={e.sinSenal}
             segundosDesde={e.segundosDesde}
             onEscenario={(esc) => cambiarEscenario(e.astronauta.id, esc)}
-            reloj={reloj?.id === e.astronauta.id ? reloj.nombre : null}
-            conectando={conectando === e.astronauta.id}
-            relojOcupado={(reloj !== null && reloj.id !== e.astronauta.id) || conectando !== null}
-            onReloj={() => alternarReloj(e.astronauta.id)}
+            pulsoTelefono={
+              ahora !== null &&
+              pulsoTelefono[e.astronauta.id] !== undefined &&
+              ahora - pulsoTelefono[e.astronauta.id] <= SEGUNDOS_PULSO_VIGENTE * 1000
+            }
+            onAbrirFicha={() => setFicha({ id: e.astronauta.id, abierta: true })}
           />
         ))}
       </section>
+
+      {(() => {
+        const e = estados.find((x) => x.astronauta.id === ficha?.id);
+        return (
+          <FichaAstronauta
+            astronauta={e?.astronauta ?? null}
+            abierta={ficha?.abierta ?? false}
+            evaluacion={e?.evaluacion ?? null}
+            sinSenal={e?.sinSenal ?? false}
+            onCerrar={() => setFicha((f) => (f ? { ...f, abierta: false } : f))}
+          />
+        );
+      })()}
 
       <footer className="text-xs text-tenue">
         Prototipo de hackathon con datos simulados. Los umbrales son ilustrativos y no sustituyen criterio médico.

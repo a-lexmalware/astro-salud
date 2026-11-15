@@ -22,7 +22,16 @@ create table if not exists public.escenarios (
   actualizado_en timestamptz not null default now()
 );
 
+-- Pulso real enviado desde el teléfono (Gadgetbridge parcheado, ver integraciones/gadgetbridge).
+create table if not exists public.pulso_reloj (
+  id bigint generated always as identity primary key,
+  astronauta_id text not null,
+  fc integer not null check (fc between 20 and 250),
+  creado_en timestamptz not null default now()
+);
+
 alter table public.lecturas enable row level security;
+alter table public.pulso_reloj enable row level security;
 alter table public.escenarios enable row level security;
 
 -- Políticas abiertas, SOLO para la demo del hackathon.
@@ -39,6 +48,11 @@ create policy "demo insertar escenarios" on public.escenarios for insert to anon
 drop policy if exists "demo actualizar escenarios" on public.escenarios;
 create policy "demo actualizar escenarios" on public.escenarios for update to anon using (true) with check (true);
 
+drop policy if exists "demo leer pulso" on public.pulso_reloj;
+create policy "demo leer pulso" on public.pulso_reloj for select to anon using (true);
+drop policy if exists "demo insertar pulso" on public.pulso_reloj;
+create policy "demo insertar pulso" on public.pulso_reloj for insert to anon with check (true);
+
 -- Retención: en cada inserción se borran las lecturas de más de una hora, para que
 -- la tabla no crezca sin límite. Es "security definer" porque anon no puede borrar.
 create or replace function public.limpiar_lecturas() returns trigger
@@ -52,13 +66,25 @@ drop trigger if exists limpiar_lecturas on public.lecturas;
 create trigger limpiar_lecturas after insert on public.lecturas
   for each statement execute function public.limpiar_lecturas();
 
--- Activa Realtime (solo si aún no está activo): lecturas en vivo y escenarios
--- sincronizados entre paneles.
+-- El pulso real solo se usa en vivo: basta con los últimos 10 minutos.
+create or replace function public.limpiar_pulso() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  delete from public.pulso_reloj where creado_en < now() - interval '10 minutes';
+  return null;
+end $$;
+
+drop trigger if exists limpiar_pulso on public.pulso_reloj;
+create trigger limpiar_pulso after insert on public.pulso_reloj
+  for each statement execute function public.limpiar_pulso();
+
+-- Activa Realtime (solo si aún no está activo): lecturas en vivo, escenarios
+-- sincronizados entre paneles y pulso real del teléfono.
 do $$
 declare
   t text;
 begin
-  foreach t in array array['lecturas', 'escenarios'] loop
+  foreach t in array array['lecturas', 'escenarios', 'pulso_reloj'] loop
     if not exists (
       select 1 from pg_publication_tables
       where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t

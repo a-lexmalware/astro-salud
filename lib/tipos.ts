@@ -1,13 +1,25 @@
 export type Nivel = "verde" | "amarillo" | "rojo";
 
-// "reloj" no es un escenario simulado: marca que la frecuencia cardiaca de ese
-// astronauta viene de un reloj real conectado por Bluetooth a un panel.
-export type Escenario = "normal" | "hipoxia" | "taquicardia" | "fiebre" | "fatiga" | "reloj";
+export type Escenario = "normal" | "hipoxia" | "taquicardia" | "fiebre" | "fatiga";
 
 export interface Astronauta {
   id: string;
   nombre: string;
   rol: string;
+  indicativo: string; // nombre corto por radio
+  /** Ruta en /public. Sin foto se muestran sus iniciales. */
+  foto?: string;
+  pais: string;
+  agencia: string;
+  edad: number;
+  grupoSanguineo: string;
+  especialidad: string;
+  diasEnMision: number;
+  misionesPrevias: number;
+  horasEva: number; // horas de actividad extravehicular acumuladas
+  fcReposo: number; // lpm medidos antes del lanzamiento
+  alergias: string;
+  notaMedica: string;
 }
 
 /** Una lectura del smartwatch. Coincide con las columnas de la tabla `lecturas`. */
@@ -22,12 +34,88 @@ export interface Lectura {
   creado_en: string; // ISO
 }
 
+// Tripulación ficticia para la demo. Los retratos están generados con IA.
 export const ASTRONAUTAS: Astronauta[] = [
-  { id: "ast-1", nombre: "Valeria Ríos", rol: "Comandante" },
-  { id: "ast-2", nombre: "Mateo Salas", rol: "Ingeniero de vuelo" },
-  { id: "ast-3", nombre: "Akira Tanaka", rol: "Médica de a bordo" },
-  { id: "ast-4", nombre: "Lucas Ferreira", rol: "Especialista de misión" },
+  {
+    id: "ast-1",
+    foto: "/astronautas/ast-1.jpg",
+    nombre: "Valeria Ríos",
+    rol: "Comandante",
+    indicativo: "Cóndor",
+    pais: "México",
+    agencia: "Agencia Espacial Mexicana",
+    edad: 44,
+    grupoSanguineo: "O+",
+    especialidad: "Piloto de pruebas",
+    diasEnMision: 118,
+    misionesPrevias: 2,
+    horasEva: 21.5,
+    fcReposo: 58,
+    alergias: "Ninguna conocida",
+    notaMedica: "Densidad ósea vigilada tras su segunda misión. Mantiene 2 h diarias de ejercicio de resistencia.",
+  },
+  {
+    id: "ast-2",
+    foto: "/astronautas/ast-2.jpg",
+    nombre: "Mateo Salas",
+    rol: "Ingeniero de vuelo",
+    indicativo: "Brújula",
+    pais: "Chile",
+    agencia: "Agencia Espacial de Chile",
+    edad: 39,
+    grupoSanguineo: "A+",
+    especialidad: "Sistemas de soporte vital",
+    diasEnMision: 118,
+    misionesPrevias: 1,
+    horasEva: 9,
+    fcReposo: 63,
+    alergias: "Penicilina",
+    notaMedica: "Antecedente de cinetosis los primeros días en órbita, ya resuelta. Usar macrólidos si necesita antibiótico.",
+  },
+  {
+    id: "ast-3",
+    foto: "/astronautas/ast-3.jpg",
+    nombre: "Akira Tanaka",
+    rol: "Médica de a bordo",
+    indicativo: "Pulso",
+    pais: "Japón",
+    agencia: "Agencia Japonesa de Exploración Aeroespacial",
+    edad: 41,
+    grupoSanguineo: "B−",
+    especialidad: "Medicina aeroespacial",
+    diasEnMision: 64,
+    misionesPrevias: 1,
+    horasEva: 0,
+    fcReposo: 66,
+    alergias: "Ninguna conocida",
+    notaMedica: "Responsable médica de la tripulación. Su propio seguimiento lo revisa el médico de vuelo en Tierra.",
+  },
+  {
+    id: "ast-4",
+    foto: "/astronautas/ast-4.jpg",
+    nombre: "Lucas Ferreira",
+    rol: "Especialista de misión",
+    indicativo: "Ancla",
+    pais: "Brasil",
+    agencia: "Agência Espacial Brasileira",
+    edad: 35,
+    grupoSanguineo: "AB+",
+    especialidad: "Biología de plantas",
+    diasEnMision: 64,
+    misionesPrevias: 0,
+    horasEva: 4.5,
+    fcReposo: 70,
+    alergias: "Polen de gramíneas",
+    notaMedica: "Primera misión. Sueño irregular las primeras semanas; mejora con el horario fijo de iluminación.",
+  },
 ];
+
+export const iniciales = (nombre: string) =>
+  nombre
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("");
 
 /** Escenarios que se pueden elegir en el panel. */
 export const ESCENARIOS: { id: Escenario; etiqueta: string }[] = [

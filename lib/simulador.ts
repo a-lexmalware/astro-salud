@@ -21,7 +21,6 @@ const OBJETIVOS: Record<Escenario, Partial<Estado>> = {
   taquicardia: { fc: 148, hrv: 14 },
   fiebre: { temp: 38.9, fc: 108, hrv: 28 },
   fatiga: { hrv: 17, sueno: 3.4, fc: 92 },
-  reloj: {},
 };
 
 const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
