@@ -205,15 +205,19 @@ export default function Panel() {
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:py-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-medium uppercase tracking-widest text-acento">Órbita Vital</p>
-          <h1 className="text-2xl font-semibold sm:text-3xl">Salud de la tripulación</h1>
-          <p className="mt-1 text-sm text-tenue">
-            {modoDemo ? "Modo demo: simulador local" : "Supabase Realtime: datos en vivo"}
-            {" · "}detección a bordo, sin depender de la Tierra
+          <h1 className="font-rotulo text-4xl font-semibold leading-none sm:text-5xl">Órbita Vital</h1>
+          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-tenue">
+            Salud de la tripulación en tiempo real
+            <span
+              className="rounded-full border border-borde px-2 py-0.5 text-xs"
+              title={modoDemo ? "Los datos los genera un simulador en este navegador" : "Datos en vivo desde Supabase"}
+            >
+              {modoDemo ? "Modo demo" : "En vivo"}
+            </span>
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="sm:text-right">
             <p className="text-xs text-tenue">Hora de misión (UTC)</p>
             <p className="font-mono text-xl tabular-nums">
               {ahora === null ? "--:--:--" : new Date(ahora).toISOString().slice(11, 19)}
@@ -223,7 +227,7 @@ export default function Panel() {
             type="button"
             onClick={restablecer}
             disabled={!hayEscenarioActivo}
-            className="rounded-md border border-borde bg-panel-2 px-3 py-2 text-sm font-medium hover:border-acento focus-visible:outline-2 focus-visible:outline-acento disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-10 rounded-md border border-borde bg-panel-2 px-3 text-sm font-medium hover:border-acento focus-visible:outline-2 focus-visible:outline-acento disabled:cursor-not-allowed disabled:opacity-50"
           >
             Restablecer escenarios
           </button>
@@ -241,7 +245,7 @@ export default function Panel() {
       </p>
 
       <section
-        className="rounded-xl border bg-panel px-5 py-4"
+        className="rounded-2xl border bg-panel px-5 py-4"
         style={{ borderColor: conDatos.length ? COLOR[nivelTripulacion] : "var(--color-borde)" }}
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -251,7 +255,7 @@ export default function Panel() {
               : `Tripulación: ${ETIQUETA[nivelTripulacion].toLowerCase()}`}
           </p>
           <p className="text-sm text-tenue">
-            {conDatos.length} de {ASTRONAUTAS.length} relojes transmitiendo · {alertas.length}{" "}
+            {conDatos.length} de {ASTRONAUTAS.length} relojes transmitiendo, {alertas.length}{" "}
             {alertas.length === 1 ? "alerta" : "alertas"}
           </p>
         </div>
@@ -266,7 +270,7 @@ export default function Panel() {
         )}
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Astronautas">
+      <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4" aria-label="Astronautas">
         {estados.map((e) => (
           <TarjetaAstronauta
             key={e.astronauta.id}

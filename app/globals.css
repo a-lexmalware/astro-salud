@@ -48,6 +48,18 @@ body {
   animation: latido var(--duracion-latido, 1s) ease-out infinite;
 }
 
+/* Gota de oxígeno: el nivel sube o baja con suavidad y la superficie ondula. */
+.gota-nivel { transition: transform 600ms var(--curva-salida); }
+@keyframes onda {
+  from { transform: translateX(0); }
+  to { transform: translateX(12px); }
+}
+.gota-onda { animation: onda 1.6s linear infinite; }
+
+/* Anillo del índice y barra de la meta: siguen al dato cuando cambia. */
+.anillo-progreso { transition: stroke-dashoffset 600ms var(--curva-salida), stroke 300ms; }
+.barra-meta { transition: width 600ms var(--curva-salida); }
+
 /* Retrato sin foto: iniciales sobre un visor de casco. */
 .visor {
   background:
@@ -102,7 +114,11 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .pulso { animation: none; }
-  .latido { animation: none; }
+  .latido,
+  .gota-onda { animation: none; }
+  .gota-nivel,
+  .anillo-progreso,
+  .barra-meta { transition: none; }
   /* Sin desplazamiento: la ficha solo aparece con un fundido corto. */
   .ficha,
   .ficha[open] {
